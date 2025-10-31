@@ -9,11 +9,16 @@ let db: ReturnType<typeof drizzle>;
 
 export async function initializeDatabase() {
   try {
+    if (!process.env.DATABASE_URL) {
+      logger.warn('DATABASE_URL not set, database will not be available');
+      return null;
+    }
+
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 20,
+      max: 10, // Reduced for serverless
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 5000,
     });
 
     db = drizzle(pool, { schema });
@@ -25,7 +30,8 @@ export async function initializeDatabase() {
     return db;
   } catch (error) {
     logger.error('Failed to connect to database:', error);
-    throw error;
+    // Don't throw - let the app start without DB
+    return null;
   }
 }
 
