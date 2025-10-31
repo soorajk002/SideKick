@@ -45,7 +45,7 @@ SideKick/
 ### Prerequisites
 
 - Node.js 18+ - [Download](https://nodejs.org/)
-- PostgreSQL 14+ - [Download](https://postgresql.org/)
+- Database: **Supabase** (free) OR PostgreSQL 14+ - [Get Supabase](https://supabase.com)
 - Zoom Developer Account - [Sign up](https://marketplace.zoom.us/)
 - OpenAI API Key - [Get key](https://platform.openai.com/)
 
@@ -59,8 +59,17 @@ cd SideKick
 # Install dependencies
 npm install
 
-# Set up database
+# Set up database - Choose one:
+
+# Option A: Supabase (Recommended - Free tier)
+# 1. Create project at supabase.com
+# 2. Get connection string from Settings → Database
+# 3. Add to backend/.env as DATABASE_URL
+
+# Option B: Local PostgreSQL
 createdb sidekick
+
+# Initialize database
 cd backend
 npm run db:push
 npm run db:seed
@@ -124,6 +133,7 @@ vercel --prod
 - [Setup Guide](./docs/SETUP.md) - Detailed installation instructions
 - [Architecture](./docs/ARCHITECTURE.md) - System design and data flow
 - [Environment Setup](./docs/ENV_SETUP.md) - API keys and configuration
+- [Supabase Setup](./docs/SUPABASE_SETUP.md) - Use Supabase as database (recommended)
 - [Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md) - Deploy to production
 - [Contributing](./CONTRIBUTING.md) - How to contribute
 

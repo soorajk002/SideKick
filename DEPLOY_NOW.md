@@ -198,29 +198,81 @@ Copy this URL!
 
 ---
 
-## 🗄️ Step 4: Initialize Database
+## 🗄️ Step 4: Set Up Database
 
-### 4.1 Install Dependencies Locally
+You have three options for the database. **Supabase is recommended** for its generous free tier!
+
+### Option A: Supabase (Recommended - Free & Easy) ⭐
+
+**Why Supabase?**
+- ✅ Generous free tier (500MB database)
+- ✅ No credit card required
+- ✅ Beautiful dashboard
+- ✅ Automatic backups
+
+**Quick Setup (5 minutes):**
+
+1. **Create Supabase Account**
+   - Go to [supabase.com](https://supabase.com)
+   - Sign up with GitHub
+   - Create new project: `sidekick`
+   - Choose region closest to you
+   - Wait ~2 minutes for provisioning
+
+2. **Get Connection String**
+   - Settings → Database → Connection string
+   - Copy the **URI** (Transaction mode)
+   - Replace `[YOUR-PASSWORD]` with your database password
+
+3. **Add to Railway/Vercel**
+   - Update `DATABASE_URL` variable with Supabase URL
+   - Format: `postgresql://postgres.xxx:password@xxx.pooler.supabase.com:6543/postgres`
+
+4. **Initialize Database**
+   ```bash
+   cd backend
+   export DATABASE_URL="your_supabase_connection_string"
+   npm run db:push
+   npm run db:seed
+   ```
+
+5. **Verify in Supabase**
+   - Open Table Editor in Supabase dashboard
+   - Should see 5 templates ✓
+
+**📚 Detailed Guide:** See [docs/SUPABASE_SETUP.md](./docs/SUPABASE_SETUP.md)
+
+### Option B: Railway PostgreSQL
+
+**If using Railway for backend:**
+
+1. In Railway project, click **"New"** → **"Database"** → **"PostgreSQL"**
+2. Copy `DATABASE_URL` from Variables tab
+3. Add to backend service as `${{Postgres.DATABASE_URL}}`
+4. Run migrations:
+   ```bash
+   cd backend
+   export DATABASE_URL="railway_postgres_url"
+   npm run db:push
+   npm run db:seed
+   ```
+
+### Option C: Vercel Postgres
+
+**If using Vercel for everything:**
+
+1. Vercel Dashboard → Storage → Create → Postgres
+2. Copy connection string
+3. Add as `DATABASE_URL` environment variable
+4. Run migrations locally with the connection string
+
+### 4.4 Verify Database Works
 ```bash
-cd backend
-npm install
+# Test connection
+curl https://your-backend.up.railway.app/api/templates
+
+# Should return 5 sales playbook templates
 ```
-
-### 4.2 Set Up Database Schema
-```bash
-# Pull environment variables from Railway
-# (or manually set DATABASE_URL in your terminal)
-export DATABASE_URL="your_railway_postgres_url"
-
-# Push database schema
-npm run db:push
-
-# Seed with default templates
-npm run db:seed
-```
-
-### 4.3 Verify Database
-Check Railway logs to confirm tables were created successfully.
 
 ---
 
