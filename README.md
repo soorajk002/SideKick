@@ -93,12 +93,38 @@ npm test
 npm run build
 ```
 
+## 🚀 Deploy to Production
+
+### Quick Deploy to Vercel + Railway
+
+```bash
+# 1. Get your API keys ready
+# - Zoom: marketplace.zoom.us
+# - OpenAI: platform.openai.com
+
+# 2. Deploy frontend to Vercel
+cd frontend
+vercel --prod
+
+# 3. Deploy backend to Railway
+# Visit railway.app and connect your GitHub repo
+
+# 4. Set environment variables
+# See docs/ENV_SETUP.md for complete list
+```
+
+**Detailed guides:**
+- [Environment Setup](./docs/ENV_SETUP.md) - Get all your API keys
+- [Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md) - Step-by-step deployment
+- [General Deployment](./docs/DEPLOYMENT.md) - Other hosting options
+
 ## 📖 Documentation
 
 - [Quick Start Guide](./QUICKSTART.md) - Get running in 5 minutes
 - [Setup Guide](./docs/SETUP.md) - Detailed installation instructions
 - [Architecture](./docs/ARCHITECTURE.md) - System design and data flow
-- [Deployment](./docs/DEPLOYMENT.md) - Production deployment guide
+- [Environment Setup](./docs/ENV_SETUP.md) - API keys and configuration
+- [Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md) - Deploy to production
 - [Contributing](./CONTRIBUTING.md) - How to contribute
 
 ## 🏗️ How It Works
