@@ -23,7 +23,7 @@ interface ZoomState {
   setError: (error: string | null) => void;
 }
 
-export const useZoomStore = create<ZoomState>((set, get) => ({
+export const useZoomStore = create<ZoomState>((set) => ({
   isConnected: false,
   isLoading: true,
   isInMeeting: false,
@@ -62,16 +62,20 @@ export const useZoomStore = create<ZoomState>((set, get) => ({
       const runningContext = await zoomSdk.getRunningContext();
       console.log('Running context:', runningContext);
 
+      // Extract user info from running context (handle different context types)
+      const contextData = typeof runningContext.context === 'object' ? runningContext.context : {};
+      const userInfo = (contextData as any)?.user || {};
+
       set({
         isConnected: true,
         isLoading: false,
         isInMeeting: true,
         meetingId: meetingContext.meetingID || null,
         currentUser: {
-          userId: runningContext.context?.user?.id || '',
-          participantId: runningContext.context?.participantId || '',
-          userName: runningContext.context?.user?.name || 'Guest',
-          role: runningContext.context?.role || 'attendee',
+          userId: userInfo?.id || '',
+          participantId: (contextData as any)?.participantId || '',
+          userName: userInfo?.name || 'Guest',
+          role: (contextData as any)?.role || 'attendee',
         },
       });
 

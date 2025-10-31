@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useChecklistStore, Template } from '../store/checklistStore';
 import { useZoomStore } from '../store/zoomStore';
 import { X, CheckCircle2, Sparkles, Plus, ListChecks } from 'lucide-react';
-import clsx from 'clsx';
 
 interface TemplateSelectorProps {
   onClose: () => void;
@@ -12,7 +11,6 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
   const { templates, loadTemplates, createChecklistFromTemplate, createCustomChecklist } =
     useChecklistStore();
   const { meetingId, currentUser } = useZoomStore();
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -110,12 +108,7 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
               key={template.id}
               onClick={() => handleSelectTemplate(template)}
               disabled={isCreating}
-              className={clsx(
-                'w-full p-4 border rounded-xl text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed group',
-                selectedTemplate?.id === template.id
-                  ? 'border-primary-400 bg-gradient-to-br from-primary-50 to-white shadow-soft'
-                  : 'border-gray-200 hover:border-primary-200 hover:bg-white hover:shadow-soft bg-white/60'
-              )}
+              className="w-full p-4 border rounded-xl text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed group border-gray-200 hover:border-primary-200 hover:bg-white hover:shadow-soft bg-white/60"
             >
               <div className="flex items-start gap-3.5">
                 <div className="flex-shrink-0 w-11 h-11 bg-gradient-to-br from-gray-100 to-gray-50 rounded-xl flex items-center justify-center group-hover:from-primary-100 group-hover:to-primary-50 transition-all">
