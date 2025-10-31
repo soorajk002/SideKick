@@ -12,21 +12,23 @@ export default function ChecklistItem({ item }: ChecklistItemProps) {
   return (
     <div
       className={clsx(
-        'group relative flex items-start gap-3 px-3 py-2.5 rounded-lg border transition-all duration-200',
+        'group relative flex items-start gap-3.5 px-4 py-3.5 rounded-xl transition-all duration-300',
         item.completed
-          ? 'bg-green-50 border-green-200'
-          : 'bg-white border-gray-200 hover:border-gray-300'
+          ? 'bg-gradient-to-r from-accent-50/80 to-accent-100/50 border border-accent-200/50 shadow-sm'
+          : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-soft'
       )}
     >
       {/* Checkbox */}
       <button
         onClick={() => toggleItem(item.id)}
-        className="flex-shrink-0 mt-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+        className="flex-shrink-0 mt-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500/30 rounded-full transition-all"
       >
         {item.completed ? (
-          <CheckCircle2 className="w-5 h-5 text-green-600" />
+          <div className="relative">
+            <CheckCircle2 className="w-5 h-5 text-accent-600 drop-shadow-sm" />
+          </div>
         ) : (
-          <Circle className="w-5 h-5 text-gray-400 group-hover:text-gray-500" />
+          <Circle className="w-5 h-5 text-gray-300 group-hover:text-gray-400 transition-colors" />
         )}
       </button>
 
@@ -34,27 +36,27 @@ export default function ChecklistItem({ item }: ChecklistItemProps) {
       <div className="flex-1 min-w-0">
         <p
           className={clsx(
-            'text-sm transition-all',
+            'text-sm leading-relaxed transition-all duration-200',
             item.completed
               ? 'text-gray-500 line-through'
-              : 'text-gray-900'
+              : 'text-gray-800 font-medium'
           )}
         >
           {item.content}
         </p>
 
         {item.description && (
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
             {item.description}
           </p>
         )}
 
         {/* Auto-checked indicator */}
         {item.autoChecked && item.matchConfidence && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-            <span className="text-xs text-purple-600 font-medium">
-              Auto-checked ({Math.round(item.matchConfidence * 100)}% confidence)
+          <div className="flex items-center gap-1.5 mt-2 px-2 py-1 bg-gradient-to-r from-primary-50 to-primary-100 rounded-lg w-fit">
+            <Sparkles className="w-3 h-3 text-primary-600" />
+            <span className="text-xs text-primary-700 font-medium">
+              AI detected ({Math.round(item.matchConfidence * 100)}%)
             </span>
           </div>
         )}
@@ -63,7 +65,7 @@ export default function ChecklistItem({ item }: ChecklistItemProps) {
       {/* Remove button (shown on hover) */}
       <button
         onClick={() => removeItem(item.id)}
-        className="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600 rounded transition-all focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        className="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500/30"
       >
         <X className="w-4 h-4" />
       </button>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useChecklistStore, Template } from '../store/checklistStore';
 import { useZoomStore } from '../store/zoomStore';
-import { X, CheckCircle2, Sparkles } from 'lucide-react';
+import { X, CheckCircle2, Sparkles, Plus, ListChecks } from 'lucide-react';
 import clsx from 'clsx';
 
 interface TemplateSelectorProps {
@@ -57,40 +57,51 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-gradient-to-b from-white to-gray-50">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Choose a Template</h2>
-        <button
-          onClick={onClose}
-          className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+      <div className="px-5 py-5 border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Select Playbook</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Choose a template or create your own</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Templates Grid */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto px-5 py-5 scrollbar-thin">
         {/* Custom Checklist Option */}
         <button
           onClick={handleCreateCustom}
           disabled={isCreating}
-          className="w-full mb-4 p-4 border-2 border-dashed border-primary-300 rounded-lg text-left hover:border-primary-500 hover:bg-primary-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mb-5 p-5 border-2 border-dashed border-primary-300 rounded-xl text-left hover:border-primary-500 hover:bg-gradient-to-br hover:from-primary-50 hover:to-white transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
         >
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-600" />
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-soft group-hover:shadow-soft-lg transition-shadow">
+              <Plus className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-1">
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-1 text-base">
                 Create Custom Checklist
               </h3>
-              <p className="text-sm text-gray-600">
-                Start from scratch with your own items
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Start from scratch with your own sales playbook items
               </p>
             </div>
           </div>
         </button>
+
+        <div className="mb-4">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Standard Playbooks
+          </h3>
+        </div>
 
         {/* Template Cards */}
         <div className="space-y-3">
@@ -100,31 +111,32 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
               onClick={() => handleSelectTemplate(template)}
               disabled={isCreating}
               className={clsx(
-                'w-full p-4 border rounded-lg text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+                'w-full p-4 border rounded-xl text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed group',
                 selectedTemplate?.id === template.id
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  ? 'border-primary-400 bg-gradient-to-br from-primary-50 to-white shadow-soft'
+                  : 'border-gray-200 hover:border-primary-200 hover:bg-white hover:shadow-soft bg-white/60'
               )}
             >
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-gray-600" />
+              <div className="flex items-start gap-3.5">
+                <div className="flex-shrink-0 w-11 h-11 bg-gradient-to-br from-gray-100 to-gray-50 rounded-xl flex items-center justify-center group-hover:from-primary-100 group-hover:to-primary-50 transition-all">
+                  <ListChecks className="w-5 h-5 text-gray-600 group-hover:text-primary-600 transition-colors" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <h3 className="font-semibold text-gray-900 text-base">
                       {template.name}
                     </h3>
-                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-medium">
+                    <span className="px-2 py-0.5 bg-primary-100 text-primary-700 rounded-md text-xs font-medium">
                       {template.category}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-gray-600 mb-2 leading-relaxed">
                     {template.description}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {template.items.length} items
-                  </p>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>{template.items.length} items</span>
+                  </div>
                 </div>
               </div>
             </button>
@@ -132,8 +144,12 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
         </div>
 
         {templates.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No templates available</p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500 font-medium">No templates available</p>
+            <p className="text-sm text-gray-400 mt-1">Create a custom checklist to get started</p>
           </div>
         )}
       </div>
