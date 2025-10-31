@@ -1,0 +1,264 @@
+import { create } from 'zustand';
+import { io, Socket } from 'socket.io-client';
+
+export interface ChecklistItem {
+  id: string;
+  content: string;
+  description?: string;
+  completed: boolean;
+  autoChecked: boolean;
+  matchedAt?: Date;
+  matchConfidence?: number;
+  order: number;
+}
+
+export interface Checklist {
+  id: string;
+  name: string;
+  templateId?: string;
+  items: ChecklistItem[];
+  createdAt: Date;
+  meetingId: string;
+  userId: string;
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  items: Omit<ChecklistItem, 'id' | 'completed' | 'autoChecked' | 'matchedAt'>[];
+  isPublic: boolean;
+}
+
+interface ChecklistState {
+  activeChecklist: Checklist | null;
+  templates: Template[];
+  socket: Socket | null;
+  isConnected: boolean;
+
+  // Actions
+  createChecklistFromTemplate: (templateId: string, meetingId: string, userId: string) => Promise<void>;
+  createCustomChecklist: (name: string, items: string[], meetingId: string, userId: string) => Promise<void>;
+  toggleItem: (itemId: string) => void;
+  addItem: (content: string) => void;
+  removeItem: (itemId: string) => void;
+  updateItem: (itemId: string, updates: Partial<ChecklistItem>) => void;
+  loadTemplates: () => Promise<void>;
+  connectWebSocket: (meetingId: string) => void;
+  disconnectWebSocket: () => void;
+}
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+
+export const useChecklistStore = create<ChecklistState>((set, get) => ({
+  activeChecklist: null,
+  templates: [],
+  socket: null,
+  isConnected: false,
+
+  createChecklistFromTemplate: async (templateId: string, meetingId: string, userId: string) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/checklists`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId, meetingId, userId }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create checklist');
+
+      const checklist = await response.json();
+      set({ activeChecklist: checklist });
+
+      // Connect to WebSocket for real-time updates
+      get().connectWebSocket(meetingId);
+    } catch (error) {
+      console.error('Failed to create checklist:', error);
+    }
+  },
+
+  createCustomChecklist: async (name: string, items: string[], meetingId: string, userId: string) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/checklists/custom`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, items, meetingId, userId }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create custom checklist');
+
+      const checklist = await response.json();
+      set({ activeChecklist: checklist });
+
+      // Connect to WebSocket for real-time updates
+      get().connectWebSocket(meetingId);
+    } catch (error) {
+      console.error('Failed to create custom checklist:', error);
+    }
+  },
+
+  toggleItem: (itemId: string) => {
+    set((state) => {
+      if (!state.activeChecklist) return state;
+
+      return {
+        activeChecklist: {
+          ...state.activeChecklist,
+          items: state.activeChecklist.items.map((item) =>
+            item.id === itemId ? { ...item, completed: !item.completed } : item
+          ),
+        },
+      };
+    });
+  },
+
+  addItem: (content: string) => {
+    set((state) => {
+      if (!state.activeChecklist) return state;
+
+      const newItem: ChecklistItem = {
+        id: `temp-${Date.now()}`,
+        content,
+        completed: false,
+        autoChecked: false,
+        order: state.activeChecklist.items.length,
+      };
+
+      return {
+        activeChecklist: {
+          ...state.activeChecklist,
+          items: [...state.activeChecklist.items, newItem],
+        },
+      };
+    });
+  },
+
+  removeItem: (itemId: string) => {
+    set((state) => {
+      if (!state.activeChecklist) return state;
+
+      return {
+        activeChecklist: {
+          ...state.activeChecklist,
+          items: state.activeChecklist.items.filter((item) => item.id !== itemId),
+        },
+      };
+    });
+  },
+
+  updateItem: (itemId: string, updates: Partial<ChecklistItem>) => {
+    set((state) => {
+      if (!state.activeChecklist) return state;
+
+      return {
+        activeChecklist: {
+          ...state.activeChecklist,
+          items: state.activeChecklist.items.map((item) =>
+            item.id === itemId ? { ...item, ...updates } : item
+          ),
+        },
+      };
+    });
+  },
+
+  loadTemplates: async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/templates`);
+      if (!response.ok) throw new Error('Failed to load templates');
+
+      const templates = await response.json();
+      set({ templates });
+    } catch (error) {
+      console.error('Failed to load templates:', error);
+      // Use default templates if backend is not available
+      set({
+        templates: [
+          {
+            id: 'discovery-call',
+            name: 'Discovery Call',
+            description: 'Essential questions for understanding prospect needs',
+            category: 'Sales',
+            isPublic: true,
+            items: [
+              { content: 'Introduction and agenda setting', order: 0 },
+              { content: 'Current challenges and pain points', order: 1 },
+              { content: 'Goals and desired outcomes', order: 2 },
+              { content: 'Budget and timeline discussion', order: 3 },
+              { content: 'Decision-making process', order: 4 },
+              { content: 'Next steps and follow-up', order: 5 },
+            ],
+          },
+          {
+            id: 'demo-call',
+            name: 'Product Demo',
+            description: 'Structured demo flow to showcase value',
+            category: 'Sales',
+            isPublic: true,
+            items: [
+              { content: 'Recap needs from discovery', order: 0 },
+              { content: 'Show key features solving their pain points', order: 1 },
+              { content: 'Handle objections and questions', order: 2 },
+              { content: 'Discuss pricing and ROI', order: 3 },
+              { content: 'Get commitment for next steps', order: 4 },
+            ],
+          },
+          {
+            id: 'closing-call',
+            name: 'Closing Call',
+            description: 'Final steps to close the deal',
+            category: 'Sales',
+            isPublic: true,
+            items: [
+              { content: 'Review contract terms', order: 0 },
+              { content: 'Address final concerns', order: 1 },
+              { content: 'Confirm implementation timeline', order: 2 },
+              { content: 'Introduce customer success team', order: 3 },
+              { content: 'Get signature commitment', order: 4 },
+            ],
+          },
+        ],
+      });
+    }
+  },
+
+  connectWebSocket: (meetingId: string) => {
+    const socket = io(BACKEND_URL, {
+      query: { meetingId },
+    });
+
+    socket.on('connect', () => {
+      console.log('WebSocket connected');
+      set({ isConnected: true });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('WebSocket disconnected');
+      set({ isConnected: false });
+    });
+
+    socket.on('item-checked', (data: { itemId: string; confidence: number }) => {
+      console.log('Item auto-checked:', data);
+      get().updateItem(data.itemId, {
+        completed: true,
+        autoChecked: true,
+        matchConfidence: data.confidence,
+        matchedAt: new Date(),
+      });
+    });
+
+    socket.on('transcription', (data: { text: string; speaker: string }) => {
+      console.log('Transcription received:', data);
+      // Handle transcription display if needed
+    });
+
+    set({ socket });
+  },
+
+  disconnectWebSocket: () => {
+    const { socket } = get();
+    if (socket) {
+      socket.disconnect();
+      set({ socket: null, isConnected: false });
+    }
+  },
+}));
