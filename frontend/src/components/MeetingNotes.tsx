@@ -2,13 +2,6 @@ import { useState, useEffect } from 'react';
 import { FileText, Save, Download, CheckSquare, Plus, X } from 'lucide-react';
 import clsx from 'clsx';
 
-interface Note {
-  id: string;
-  content: string;
-  timestamp: Date;
-  itemId?: string;
-}
-
 interface ActionItem {
   id: string;
   title: string;
@@ -23,7 +16,7 @@ interface MeetingNotesProps {
   onSave?: (notes: string, actionItems: ActionItem[]) => void;
 }
 
-export default function MeetingNotes({ meetingId, checklistId, onSave }: MeetingNotesProps) {
+export default function MeetingNotes({ meetingId, checklistId: _checklistId, onSave }: MeetingNotesProps) {
   const [notes, setNotes] = useState('');
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
