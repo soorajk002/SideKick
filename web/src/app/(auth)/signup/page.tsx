@@ -19,9 +19,26 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      // TODO: Implement signup
-      console.log('Signup:', formData)
-      // await fetch('/api/auth/signup', { method: 'POST', body: JSON.stringify(formData) })
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to create account')
+        return
+      }
+
+      // Auto-login after successful signup
+      const { signIn } = await import('next-auth/react')
+      await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        callbackUrl: '/dashboard',
+      })
     } catch (err) {
       setError('Failed to create account. Please try again.')
     } finally {
@@ -29,9 +46,13 @@ export default function SignupPage() {
     }
   }
 
-  const handleOAuthSignup = (provider: string) => {
-    // TODO: Implement OAuth
-    console.log('OAuth signup:', provider)
+  const handleOAuthSignup = async (provider: string) => {
+    try {
+      const { signIn } = await import('next-auth/react')
+      await signIn(provider, { callbackUrl: '/dashboard' })
+    } catch (err) {
+      setError('Failed to sign up with ' + provider)
+    }
   }
 
   const passwordStrength = (password: string) => {

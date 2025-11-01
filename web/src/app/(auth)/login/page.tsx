@@ -16,9 +16,18 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // TODO: Implement NextAuth signIn
-      console.log('Login:', { email, password })
-      // await signIn('credentials', { email, password, redirect: false })
+      const { signIn } = await import('next-auth/react')
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Invalid email or password')
+      } else if (result?.ok) {
+        window.location.href = '/dashboard'
+      }
     } catch (err) {
       setError('Invalid email or password')
     } finally {
@@ -26,9 +35,13 @@ export default function LoginPage() {
     }
   }
 
-  const handleOAuthLogin = (provider: string) => {
-    // TODO: Implement OAuth
-    console.log('OAuth login:', provider)
+  const handleOAuthLogin = async (provider: string) => {
+    try {
+      const { signIn } = await import('next-auth/react')
+      await signIn(provider, { callbackUrl: '/dashboard' })
+    } catch (err) {
+      setError('Failed to sign in with ' + provider)
+    }
   }
 
   return (
