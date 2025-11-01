@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { logger } from '../src/utils/logger.js';
-import { errorHandler } from '../src/middleware/errorHandler.js';
-import checklistRouter from '../src/routes/checklist.js';
-import templateRouter from '../src/routes/template.js';
-import webhookRouter from '../src/routes/webhook.js';
-import { initializeDatabase } from '../src/db/index.js';
+import { logger } from '../src/utils/logger';
+import { errorHandler } from '../src/middleware/errorHandler';
+import checklistRouter from '../src/routes/checklist';
+import templateRouter from '../src/routes/template';
+import webhookRouter from '../src/routes/webhook';
+import { initializeDatabase } from '../src/db/index';
 
 // Load environment variables
 dotenv.config();
