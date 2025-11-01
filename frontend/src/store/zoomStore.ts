@@ -36,18 +36,26 @@ export const useZoomStore = create<ZoomState>((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      console.log('Initializing Zoom SDK...');
+      console.log('=== ZOOM SDK INITIALIZATION ===');
       console.log('SDK available:', typeof zoomSdk);
+      console.log('Current URL:', window.location.href);
+      console.log('Build timestamp:', new Date().toISOString());
 
       // Configure Zoom SDK with all required parameters
-      const configResponse = await zoomSdk.config({
+      const config = {
         capabilities: [],
-        version: '0.16.0',
-        size: { width: 480, height: 720 }, // App window size
-        popoutSize: { width: 480, height: 720 }, // Popout window size
-      });
+        version: '0.16.0' as const,
+        size: { width: 480, height: 720 },
+        popoutSize: { width: 480, height: 720 },
+      };
 
-      console.log('Zoom SDK configured successfully:', configResponse);
+      console.log('Config object:', JSON.stringify(config, null, 2));
+      console.log('Calling zoomSdk.config()...');
+
+      const configResponse = await zoomSdk.config(config);
+
+      console.log('✅ Zoom SDK configured successfully!');
+      console.log('Config response:', configResponse);
 
       // Don't try to get running context yet - just mark as connected
       set({
