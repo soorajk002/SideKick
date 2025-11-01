@@ -7,6 +7,14 @@
     {
       "source": "/api/:path*",
       "destination": "https://your-backend-url.vercel.app/api/:path*"
+    },
+    {
+      "source": "/auth/zoom/callback",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
