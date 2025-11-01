@@ -42,8 +42,12 @@ export const useZoomStore = create<ZoomState>((set) => ({
       console.log('Build timestamp:', new Date().toISOString());
 
       // Configure Zoom SDK with all required parameters
+      // IMPORTANT: capabilities must match the APIs enabled in Zoom Marketplace
       const config = {
-        capabilities: [],
+        capabilities: [
+          'getRunningContext' as const,  // Enabled in Marketplace
+          'openUrl' as const,            // Enabled in Marketplace
+        ],
         version: '0.16.0' as const,
         size: { width: 480, height: 720 },
         popoutSize: { width: 480, height: 720 },
@@ -57,21 +61,29 @@ export const useZoomStore = create<ZoomState>((set) => ({
       console.log('✅ Zoom SDK configured successfully!');
       console.log('Config response:', configResponse);
 
-      // Don't try to get running context yet - just mark as connected
+      // Get running context now that we have the capability
+      console.log('Getting running context...');
+      const runningContext = await zoomSdk.getRunningContext();
+      console.log('Running context:', runningContext);
+
+      // Extract context data
+      const contextData = typeof runningContext.context === 'object' ? runningContext.context : {};
+      const userInfo = (contextData as any)?.user || {};
+
       set({
         isConnected: true,
         isLoading: false,
         isInMeeting: true,
-        meetingId: 'meeting-' + Date.now(), // Use timestamp as placeholder
+        meetingId: (contextData as any)?.meetingID || 'meeting-' + Date.now(),
         currentUser: {
-          userId: 'user-' + Date.now(),
-          participantId: '',
-          userName: 'Guest',
-          role: 'attendee',
+          userId: userInfo?.id || 'user-' + Date.now(),
+          participantId: (contextData as any)?.participantId || '',
+          userName: userInfo?.name || 'Guest',
+          role: (contextData as any)?.role || 'attendee',
         },
       });
 
-      console.log('Zoom SDK initialized successfully with zero capabilities!');
+      console.log('✅ Zoom SDK initialized successfully!');
 
     } catch (error) {
       console.error('Failed to initialize Zoom SDK:', error);
