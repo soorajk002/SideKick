@@ -39,9 +39,8 @@ router.post('/', async (req, res, next) => {
     }
 
     // Ensure user exists or create
-    let user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.zoomUserId, userId),
-    });
+    const userResults = await db.select().from(users).where(eq(users.zoomUserId, userId)).limit(1);
+    let user = userResults[0];
 
     if (!user) {
       const [newUser] = await db.insert(users).values({
@@ -85,9 +84,8 @@ router.post('/custom', async (req, res, next) => {
     const db = getDb();
 
     // Ensure user exists or create
-    let user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.zoomUserId, userId),
-    });
+    const userResults = await db.select().from(users).where(eq(users.zoomUserId, userId)).limit(1);
+    let user = userResults[0];
 
     if (!user) {
       const [newUser] = await db.insert(users).values({
