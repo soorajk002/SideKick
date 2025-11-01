@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
+import { templatesApi, checklistsApi, meetingsApi } from '../lib/api';
 
 export interface ChecklistItem {
   id: string;
@@ -36,11 +37,12 @@ interface ChecklistState {
   templates: Template[];
   socket: Socket | null;
   isConnected: boolean;
+  currentMeetingId: string | null;
 
   // Actions
-  createChecklistFromTemplate: (templateId: string, meetingId: string, userId: string) => Promise<void>;
+  createChecklistFromTemplate: (templateId: string, meetingId: string, userId: string, organizationId: string) => Promise<void>;
   createCustomChecklist: (name: string, items: string[], meetingId: string, userId: string) => Promise<void>;
-  toggleItem: (itemId: string) => void;
+  toggleItem: (itemId: string, userId: string) => Promise<void>;
   addItem: (content: string) => void;
   removeItem: (itemId: string) => void;
   updateItem: (itemId: string, updates: Partial<ChecklistItem>) => void;
@@ -49,31 +51,64 @@ interface ChecklistState {
   disconnectWebSocket: () => void;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const useChecklistStore = create<ChecklistState>((set, get) => ({
   activeChecklist: null,
   templates: [],
   socket: null,
   isConnected: false,
+  currentMeetingId: null,
 
-  createChecklistFromTemplate: async (templateId: string, meetingId: string, userId: string) => {
+  createChecklistFromTemplate: async (templateId: string, meetingId: string, userId: string, organizationId: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/checklists`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId, meetingId, userId }),
+      // First, create or get the meeting
+      const zoomMeetingId = await (window as any).zoomSdk?.getMeetingContext?.()?.then((ctx: any) => ctx.meetingID);
+
+      if (zoomMeetingId) {
+        await meetingsApi.create({
+          title: `Meeting ${zoomMeetingId}`,
+          zoomMeetingId: zoomMeetingId.toString(),
+          templateId,
+          hostUserId: userId,
+          organizationId,
+          startedAt: new Date(),
+        });
+      }
+
+      // Create checklist from template
+      const checklistData = await checklistsApi.create({
+        meetingId,
+        templateId,
+        userId,
       });
 
-      if (!response.ok) throw new Error('Failed to create checklist');
+      // Transform backend data to frontend format
+      const checklist: Checklist = {
+        id: checklistData.id,
+        name: 'Checklist',
+        templateId: checklistData.templateId,
+        items: (checklistData.items || []).map((item) => ({
+          id: item.id,
+          content: item.title,
+          description: item.description || undefined,
+          completed: item.isCompleted,
+          autoChecked: item.aiChecked,
+          matchConfidence: item.aiConfidence || undefined,
+          order: item.order,
+        })),
+        createdAt: new Date(checklistData.createdAt as any),
+        meetingId: checklistData.meetingId,
+        userId: checklistData.userId,
+      };
 
-      const checklist = await response.json();
-      set({ activeChecklist: checklist });
+      set({ activeChecklist: checklist, currentMeetingId: meetingId });
 
       // Connect to WebSocket for real-time updates
       get().connectWebSocket(meetingId);
     } catch (error) {
       console.error('Failed to create checklist:', error);
+      throw error;
     }
   },
 
@@ -97,19 +132,49 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
     }
   },
 
-  toggleItem: (itemId: string) => {
+  toggleItem: async (itemId: string, userId: string) => {
+    const { activeChecklist } = get();
+    if (!activeChecklist) return;
+
+    const item = activeChecklist.items.find((i) => i.id === itemId);
+    if (!item) return;
+
+    // Optimistically update UI
     set((state) => {
       if (!state.activeChecklist) return state;
 
       return {
         activeChecklist: {
           ...state.activeChecklist,
-          items: state.activeChecklist.items.map((item) =>
-            item.id === itemId ? { ...item, completed: !item.completed } : item
+          items: state.activeChecklist.items.map((i) =>
+            i.id === itemId ? { ...i, completed: !i.completed } : i
           ),
         },
       };
     });
+
+    // Sync with backend
+    try {
+      await checklistsApi.updateItem(activeChecklist.id, itemId, {
+        isCompleted: !item.completed,
+        completedBy: userId,
+      });
+    } catch (error) {
+      console.error('Failed to update item:', error);
+      // Revert on error
+      set((state) => {
+        if (!state.activeChecklist) return state;
+
+        return {
+          activeChecklist: {
+            ...state.activeChecklist,
+            items: state.activeChecklist.items.map((i) =>
+              i.id === itemId ? { ...i, completed: item.completed } : i
+            ),
+          },
+        };
+      });
+    }
   },
 
   addItem: (content: string) => {
@@ -163,10 +228,18 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
 
   loadTemplates: async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/templates`);
-      if (!response.ok) throw new Error('Failed to load templates');
+      const templatesData = await templatesApi.list({ public: 'true' });
 
-      const templates = await response.json();
+      // Transform backend data to frontend format
+      const templates: Template[] = templatesData.map((t) => ({
+        id: t.id,
+        name: t.name,
+        description: t.description || '',
+        category: t.category,
+        isPublic: t.isPublic,
+        items: [], // Items will be loaded when creating checklist
+      }));
+
       set({ templates });
     } catch (error) {
       console.error('Failed to load templates:', error);
