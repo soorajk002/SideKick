@@ -8,16 +8,16 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7e22ce',
-          800: '#6b21a8',
-          900: '#581c87',
+          50: '#fef2f0',
+          100: '#fde4df',
+          200: '#fbcdc4',
+          300: '#f8aa9c',
+          400: '#f37d68',
+          500: '#eb5a3f',
+          600: '#DA3301', // Main brand color
+          700: '#b82b01',
+          800: '#982401',
+          900: '#7d2105',
         },
         accent: {
           50: '#f0fdfa',
@@ -33,7 +33,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter var', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Poppins', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
         'soft': '0 2px 8px 0 rgba(0, 0, 0, 0.04)',
