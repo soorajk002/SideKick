@@ -30,9 +30,9 @@ router.post('/', async (req, res, next) => {
     const db = getDb();
 
     // Get template
-    const template = await db.query.templates.findFirst({
-      where: (templates, { eq }) => eq(templates.id, templateId),
-    });
+    const { templates } = await import('../db/schema.js');
+    const templateResults = await db.select().from(templates).where(eq(templates.id, templateId)).limit(1);
+    const template = templateResults[0];
 
     if (!template) {
       throw new AppError('Template not found', 404);
@@ -127,9 +127,8 @@ router.get('/meeting/:meetingId', async (req, res, next) => {
     const { meetingId } = req.params;
     const db = getDb();
 
-    const checklist = await db.query.checklists.findFirst({
-      where: (checklists, { eq }) => eq(checklists.meetingId, meetingId),
-    });
+    const checklistResults = await db.select().from(checklists).where(eq(checklists.meetingId, meetingId)).limit(1);
+    const checklist = checklistResults[0];
 
     if (!checklist) {
       throw new AppError('Checklist not found', 404);

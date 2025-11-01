@@ -56,9 +56,8 @@ export class ConversationAnalyzer {
       // Get checklist
       let checklist = this.checklistCache.get(checklistId);
       if (!checklist) {
-        checklist = await db.query.checklists.findFirst({
-          where: eq(checklists.id, checklistId),
-        });
+        const results = await db.select().from(checklists).where(eq(checklists.id, checklistId)).limit(1);
+        checklist = results[0];
         if (checklist) {
           this.checklistCache.set(checklistId, checklist);
         }
