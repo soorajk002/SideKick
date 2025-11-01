@@ -33,7 +33,89 @@ export interface AIAnalysisResult {
 }
 
 /**
- * Analyze meeting transcript and auto-check checklist items
+ * Real-time analysis using GPT-4o-mini for fast, cheap checking during meeting
+ * Only checks if items should be marked as completed - no detailed analysis
+ */
+export async function analyzeTranscriptRealtime(
+  newTranscript: string,
+  context: string,
+  checklistItems: ChecklistItem[],
+  alreadyCheckedItemIds: string[]
+): Promise<AICheckResult[]> {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is not configured')
+  }
+
+  // Filter out already checked items
+  const uncheckedItems = checklistItems.filter(item => !alreadyCheckedItemIds.includes(item.id))
+
+  if (uncheckedItems.length === 0) {
+    return []
+  }
+
+  const systemPrompt = `You are a fast AI assistant that monitors sales calls in real-time and checks off completed checklist items.
+
+Your task:
+- Review the NEW conversation content
+- Determine if any unchecked items were just discussed or completed
+- Only mark items as checked if you have CLEAR evidence in the NEW content
+- Be fast and accurate - this runs every 30 seconds
+
+Return ONLY a JSON array of items that should be checked NOW.`
+
+  const userPrompt = `Previous context (for reference):
+${context}
+
+NEW conversation (analyze this):
+${newTranscript}
+
+Unchecked items:
+${uncheckedItems.map((item, idx) => `${idx + 1}. ID: ${item.id} - ${item.title}${item.description ? ` (${item.description})` : ''}${item.aiKeywords.length > 0 ? `\nKeywords: ${item.aiKeywords.join(', ')}` : ''}`).join('\n\n')}
+
+Return JSON array:
+[
+  {
+    "itemId": "item_id",
+    "shouldCheck": true,
+    "confidence": 75,
+    "reasoning": "Brief reason",
+    "evidenceSnippets": ["short quote"]
+  }
+]
+
+Only include items that should be checked NOW based on the NEW conversation.`
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini', // Fast & cheap for real-time
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2, // Low temperature for consistency
+      response_format: { type: 'json_object' },
+      max_tokens: 500, // Keep it short for speed
+    })
+
+    const responseContent = completion.choices[0]?.message?.content
+
+    if (!responseContent) {
+      throw new Error('No response from OpenAI')
+    }
+
+    const parsed = JSON.parse(responseContent)
+    const results: AICheckResult[] = parsed.items || parsed.checkedItems || []
+
+    return results
+  } catch (error) {
+    console.error('Error in real-time analysis:', error)
+    return [] // Return empty array on error, don't break the flow
+  }
+}
+
+/**
+ * Full post-meeting analysis using GPT-4 Turbo for detailed insights
+ * This is the comprehensive analysis after the call ends
  */
 export async function analyzeTranscriptWithAI(
   transcript: string,
@@ -47,7 +129,7 @@ export async function analyzeTranscriptWithAI(
   const systemPrompt = `You are an AI assistant that analyzes sales call transcripts and determines which checklist items have been discussed or completed.
 
 Your task is to:
-1. Carefully read the meeting transcript
+1. Carefully read the FULL meeting transcript
 2. For each checklist item, determine if it was discussed or completed
 3. Provide confidence scores (0-100) for each determination
 4. Extract relevant snippets from the transcript as evidence

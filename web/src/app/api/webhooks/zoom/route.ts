@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { db, meetings, checklists } from '@/lib/db'
 import { eq } from 'drizzle-orm'
+import transcriptService from '@/lib/services/transcript-service'
+import { emitTranscriptChunk } from '@/lib/websocket/server'
 
 // Verify Zoom webhook signature
 function verifyZoomWebhook(payload: string, signature: string, timestamp: string): boolean {
@@ -88,6 +90,68 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({ success: true, message: 'Meeting ended event processed' })
+    }
+
+    // Handle live transcription chunks (real-time during meeting)
+    if (event === 'meeting.live_transcription.message') {
+      const transcriptData = data.payload.object
+      const meetingId = transcriptData.meeting_id
+      const text = transcriptData.transcript?.content || transcriptData.text || ''
+      const speaker = transcriptData.speaker?.name || transcriptData.participant_name
+      const timestamp = transcriptData.timestamp
+
+      console.log(`Live transcription for meeting ${meetingId}:`, text.substring(0, 50))
+
+      // Find meeting in database
+      const [meeting] = await db
+        .select()
+        .from(meetings)
+        .where(eq(meetings.zoomMeetingId, meetingId.toString()))
+
+      if (!meeting) {
+        console.log('Meeting not found in database for live transcription')
+        return NextResponse.json({ success: true, message: 'Meeting not found' })
+      }
+
+      // Add to transcript service
+      transcriptService.addChunk(meeting.id, {
+        text,
+        speaker,
+        timestamp: timestamp ? new Date(timestamp) : new Date(),
+      })
+
+      // Emit to WebSocket clients
+      emitTranscriptChunk(meeting.id, {
+        text,
+        speaker,
+        timestamp: timestamp ? new Date(timestamp) : new Date(),
+      })
+
+      // Find active checklist
+      const [checklist] = await db
+        .select()
+        .from(checklists)
+        .where(eq(checklists.meetingId, meeting.id))
+
+      // Trigger real-time analysis if conditions are met
+      if (checklist && transcriptService.shouldAnalyze(meeting.id)) {
+        // Call real-time analysis endpoint asynchronously
+        // Don't await - fire and forget to not block webhook response
+        const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
+        fetch(`${apiUrl}/api/checklists/${checklist.id}/analyze-realtime`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcriptChunk: text,
+            speaker,
+            userId: meeting.hostUserId,
+          }),
+        }).catch(err => {
+          console.error('Error triggering real-time analysis:', err)
+        })
+      }
+
+      return NextResponse.json({ success: true, message: 'Live transcription processed' })
     }
 
     // Handle recording completed event (contains transcript)

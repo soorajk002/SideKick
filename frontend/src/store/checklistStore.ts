@@ -296,12 +296,18 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
 
   connectWebSocket: (meetingId: string) => {
     const socket = io(BACKEND_URL, {
-      query: { meetingId },
+      path: '/api/socket',
+      transports: ['websocket', 'polling'],
     });
 
     socket.on('connect', () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected, joining meeting:', meetingId);
+      socket.emit('join-meeting', meetingId);
       set({ isConnected: true });
+    });
+
+    socket.on('joined', (data: { meetingId: string }) => {
+      console.log('Joined meeting room:', data.meetingId);
     });
 
     socket.on('disconnect', () => {
@@ -309,8 +315,27 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
       set({ isConnected: false });
     });
 
-    socket.on('item-checked', (data: { itemId: string; confidence: number }) => {
-      console.log('Item auto-checked:', data);
+    // Real-time item auto-checked event
+    socket.on('item-checked', (data: {
+      itemId: string;
+      checklistId: string;
+      title: string;
+      confidence: number;
+      reasoning: string;
+      evidence: string[];
+    }) => {
+      console.log('✅ Item auto-checked:', data.title, `(${data.confidence}% confidence)`);
+
+      // Show notification
+      if ((window as any).showNotification) {
+        (window as any).showNotification({
+          title: '✅ Item Checked',
+          message: `${data.title} (${data.confidence}% confidence)`,
+          type: 'success',
+        });
+      }
+
+      // Update item in store
       get().updateItem(data.itemId, {
         completed: true,
         autoChecked: true,
@@ -319,9 +344,23 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
       });
     });
 
-    socket.on('transcription', (data: { text: string; speaker: string }) => {
-      console.log('Transcription received:', data);
-      // Handle transcription display if needed
+    // Real-time transcript chunks
+    socket.on('transcript-chunk', (data: { text: string; speaker?: string; timestamp: Date }) => {
+      console.log('Transcript:', data.speaker ? `${data.speaker}:` : '', data.text);
+      // You can display this in real-time if you want to show live captions
+    });
+
+    // Analysis events
+    socket.on('analysis-started', () => {
+      console.log('🤖 AI analysis started...');
+    });
+
+    socket.on('analysis-completed', (data: {
+      itemsChecked: number;
+      totalItems: number;
+      completionRate: number;
+    }) => {
+      console.log(`✅ Analysis complete: ${data.itemsChecked} items checked (${data.completionRate}% complete)`);
     });
 
     set({ socket });
