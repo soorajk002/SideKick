@@ -9,6 +9,9 @@ interface ChecklistItemProps {
 export default function ChecklistItem({ item }: ChecklistItemProps) {
   const { toggleItem, removeItem } = useChecklistStore();
 
+  // TODO: Get actual userId from auth/session
+  const userId = 'current-user';
+
   return (
     <div
       className={clsx(
@@ -20,7 +23,7 @@ export default function ChecklistItem({ item }: ChecklistItemProps) {
     >
       {/* Checkbox */}
       <button
-        onClick={() => toggleItem(item.id)}
+        onClick={() => toggleItem(item.id, userId)}
         className="flex-shrink-0 mt-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500/30 rounded-full transition-all"
       >
         {item.completed ? (

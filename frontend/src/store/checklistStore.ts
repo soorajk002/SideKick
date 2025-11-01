@@ -97,7 +97,7 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
           matchConfidence: item.aiConfidence || undefined,
           order: item.order,
         })),
-        createdAt: new Date(checklistData.createdAt as any),
+        createdAt: new Date(), // Checklist just created
         meetingId: checklistData.meetingId,
         userId: checklistData.userId,
       };
@@ -228,7 +228,8 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
 
   loadTemplates: async () => {
     try {
-      const templatesData = await templatesApi.list({ public: 'true' });
+      // Load all public templates (filtered on backend)
+      const templatesData = await templatesApi.list();
 
       // Transform backend data to frontend format
       const templates: Template[] = templatesData.map((t) => ({

@@ -22,7 +22,9 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
 
     setIsCreating(true);
     try {
-      await createChecklistFromTemplate(template.id, meetingId, currentUser.userId);
+      // TODO: Get actual organizationId from user session
+      const organizationId = 'default-org';
+      await createChecklistFromTemplate(template.id, meetingId, currentUser.userId, organizationId);
       onClose();
     } catch (error) {
       console.error('Failed to create checklist:', error);
