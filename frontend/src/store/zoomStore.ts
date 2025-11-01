@@ -36,6 +36,9 @@ export const useZoomStore = create<ZoomState>((set) => ({
     try {
       set({ isLoading: true, error: null });
 
+      console.log('Initializing Zoom SDK...');
+      console.log('SDK available:', typeof zoomSdk);
+
       // Configure Zoom SDK
       const configResponse = await zoomSdk.config({
         capabilities: [
@@ -52,7 +55,7 @@ export const useZoomStore = create<ZoomState>((set) => ({
         version: '0.16.0',
       });
 
-      console.log('Zoom SDK configured:', configResponse);
+      console.log('Zoom SDK configured successfully:', configResponse);
 
       // Get meeting context
       const meetingContext = await zoomSdk.getMeetingContext();
@@ -86,9 +89,20 @@ export const useZoomStore = create<ZoomState>((set) => ({
 
     } catch (error) {
       console.error('Failed to initialize Zoom SDK:', error);
+
+      let errorMessage = 'Failed to connect to Zoom.';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      }
+
+      console.error('Detailed error:', errorMessage);
+
       set({
         isLoading: false,
-        error: 'Failed to connect to Zoom. Please ensure the app is running in Zoom.',
+        error: `Zoom SDK Error: ${errorMessage}`,
       });
     }
   },
