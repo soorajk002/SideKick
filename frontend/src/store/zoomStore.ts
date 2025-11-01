@@ -39,11 +39,12 @@ export const useZoomStore = create<ZoomState>((set) => ({
       console.log('Initializing Zoom SDK...');
       console.log('SDK available:', typeof zoomSdk);
 
-      // Configure Zoom SDK with required parameters
+      // Configure Zoom SDK with all required parameters
       const configResponse = await zoomSdk.config({
         capabilities: [],
         version: '0.16.0',
-        popoutSize: { width: 480, height: 720 }, // Required for in-meeting apps
+        size: { width: 480, height: 720 }, // App window size
+        popoutSize: { width: 480, height: 720 }, // Popout window size
       });
 
       console.log('Zoom SDK configured successfully:', configResponse);
