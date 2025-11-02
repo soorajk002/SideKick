@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, meetings, checklists, checklistItems, templates } from '@/lib/db'
-import { eq, and, sql, desc, gte, count } from 'drizzle-orm'
+import { eq, and, sql, desc, gte, count, isNull } from 'drizzle-orm'
 
 // GET /api/analytics - Get analytics data
 export async function GET(request: NextRequest) {
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             eq(meetings.organizationId, organizationId),
-            eq(meetings.deletedAt, null),
+            isNull(meetings.deletedAt),
             ...dateConditions
           )
         )
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           and(
             eq(meetings.organizationId, organizationId),
             eq(meetings.outcome, 'Closed Won'),
-            eq(meetings.deletedAt, null),
+            isNull(meetings.deletedAt),
             ...dateConditions
           )
         )
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             eq(meetings.organizationId, organizationId),
-            eq(meetings.deletedAt, null),
+            isNull(meetings.deletedAt),
             ...dateConditions
           )
         )
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
           and(
             eq(meetings.organizationId, organizationId),
             eq(meetings.outcome, 'Closed Won'),
-            eq(meetings.deletedAt, null),
+            isNull(meetings.deletedAt),
             ...dateConditions
           )
         )
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             eq(meetings.organizationId, organizationId),
-            eq(meetings.deletedAt, null),
+            isNull(meetings.deletedAt),
             ...dateConditions
           )
         )
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             eq(meetings.organizationId, organizationId),
-            eq(meetings.deletedAt, null),
+            isNull(meetings.deletedAt),
             ...dateConditions
           )
         )
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             eq(meetings.organizationId, organizationId),
-            eq(meetings.deletedAt, null),
+            isNull(meetings.deletedAt),
             ...dateConditions
           )
         )

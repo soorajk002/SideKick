@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, meetings, checklists, checklistItems } from '@/lib/db'
-import { eq, and, or, ilike, desc, gte, lte } from 'drizzle-orm'
+import { eq, and, or, ilike, desc, gte, lte, isNull } from 'drizzle-orm'
 
 // GET /api/meetings - List all meetings with optional filtering
 export async function GET(request: NextRequest) {
@@ -44,21 +44,21 @@ export async function GET(request: NextRequest) {
     }
 
     if (startDate) {
-      conditions.push(gte(meetings.startedAt, new Date(startDate)))
+      conditions.push(gte(meetings.startTime, new Date(startDate)))
     }
 
     if (endDate) {
-      conditions.push(lte(meetings.startedAt, new Date(endDate)))
+      conditions.push(lte(meetings.startTime, new Date(endDate)))
     }
 
     // Only show non-deleted meetings
-    conditions.push(eq(meetings.deletedAt, null))
+    conditions.push(isNull(meetings.deletedAt))
 
     if (conditions.length > 0) {
       query = query.where(and(...conditions))
     }
 
-    const results = await query.orderBy(desc(meetings.startedAt))
+    const results = await query.orderBy(desc(meetings.startTime))
 
     return NextResponse.json({
       success: true,
