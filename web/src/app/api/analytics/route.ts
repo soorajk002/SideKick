@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, meetings, checklists, checklistItems, templates } from '@/lib/db'
 import { eq, and, sql, desc, gte, count, isNull } from 'drizzle-orm'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET /api/analytics - Get analytics data
 export async function GET(request: NextRequest) {
   try {

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, templates, templateItems } from '@/lib/db'
 import { eq, and, or, ilike, desc } from 'drizzle-orm'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET /api/templates - List all templates with optional filtering
 export async function GET(request: NextRequest) {
   try {

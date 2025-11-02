@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, meetings, checklists, checklistItems } from '@/lib/db'
 import { eq, and, or, ilike, desc, gte, lte, isNull } from 'drizzle-orm'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET /api/meetings - List all meetings with optional filtering
 export async function GET(request: NextRequest) {
   try {

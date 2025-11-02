@@ -3,6 +3,9 @@ import { db, checklists, checklistItems, meetings, templates, templateItems } fr
 import { eq, and, desc } from 'drizzle-orm'
 import { analyzeTranscriptWithAI } from '@/lib/ai/openai'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET /api/checklists - List checklists
 export async function GET(request: NextRequest) {
   try {

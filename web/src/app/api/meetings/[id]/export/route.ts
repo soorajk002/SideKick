@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, meetings, checklists, checklistItems, meetingNotes, actionItems, templates } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET /api/meetings/[id]/export?format=pdf|markdown
 export async function GET(
   request: NextRequest,
