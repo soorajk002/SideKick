@@ -53,11 +53,19 @@ export async function POST(request: NextRequest) {
     // Create organization if name provided
     let organizationId: string | null = null
     if (organizationName) {
+      // Generate slug from organization name
+      const baseSlug = organizationName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+      const slug = `${baseSlug}-${Date.now().toString(36)}`
+
       const [organization] = await db
         .insert(organizations)
         .values({
           name: organizationName,
-          subscriptionStatus: 'trial',
+          slug,
+          subscriptionStatus: 'trialing',
           aiCreditsLimit: 5, // Free trial: 5 meetings
           aiCreditsUsed: 0,
         })
