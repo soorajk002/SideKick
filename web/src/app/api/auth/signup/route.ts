@@ -110,8 +110,18 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Error creating user:', error)
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name)
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return NextResponse.json(
-      { success: false, error: 'Failed to create user account' },
+      {
+        success: false,
+        error: 'Failed to create user account',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
