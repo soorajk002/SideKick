@@ -1,4 +1,4 @@
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface HeaderProps {
   onNewChecklist: () => void;
@@ -8,13 +8,11 @@ export default function Header({ onNewChecklist }: HeaderProps) {
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-soft">
-          <Sparkles className="w-4.5 h-4.5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900 tracking-tight">SideKick</h1>
-          <p className="text-xs text-gray-500">AI Sales Assistant</p>
-        </div>
+        <img
+          src="/images/sidekick-logo.svg"
+          alt="Sidekick"
+          className="h-8 w-auto"
+        />
       </div>
 
       <button

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   Sparkles,
@@ -56,8 +57,13 @@ export default function DashboardLayout({
         <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-white p-6">
           <div className="flex items-center justify-between mb-8">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <Sparkles className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold">Sidekick</span>
+              <Image
+                src="/images/sidekick-logo.svg"
+                alt="Sidekick"
+                width={120}
+                height={32}
+                className="h-8 w-auto"
+              />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -103,8 +109,13 @@ export default function DashboardLayout({
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <Sparkles className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold">Sidekick</span>
+              <Image
+                src="/images/sidekick-logo.svg"
+                alt="Sidekick"
+                width={120}
+                height={32}
+                className="h-8 w-auto"
+              />
             </Link>
           </div>
 
