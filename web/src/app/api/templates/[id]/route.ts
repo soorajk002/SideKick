@@ -105,7 +105,7 @@ export async function PUT(
           title: item.title,
           description: item.description,
           order: index,
-          required: item.required || false,
+          required: item.isRequired || false,
           aiKeywords: item.aiKeywords || [],
         }))
 

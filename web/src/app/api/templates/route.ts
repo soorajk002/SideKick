@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
         title: item.title,
         description: item.description,
         order: index,
-        required: item.required || false,
+        required: item.isRequired || false,
         aiKeywords: item.aiKeywords || [],
       }))
 

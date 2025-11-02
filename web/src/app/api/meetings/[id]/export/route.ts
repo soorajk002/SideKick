@@ -142,7 +142,7 @@ function generateMarkdown(
   // Checklist
   if (checklist) {
     md += `## 📋 Checklist: ${checklist.templateName}\n\n`
-    md += `**Completion Rate:** ${checklist.completionRate}%\n\n`
+    md += `**Completion Rate:** ${checklist.completionPercentage}%\n\n`
 
     checklist.items.forEach((item: any) => {
       const checkbox = item.isCompleted ? '[x]' : '[ ]'
@@ -358,7 +358,7 @@ function generateHTML(
   if (checklist) {
     html += `
   <h2>📋 Checklist: ${checklist.templateName}</h2>
-  <p><strong>Completion Rate:</strong> ${checklist.completionRate}%</p>
+  <p><strong>Completion Rate:</strong> ${checklist.completionPercentage}%</p>
 `
 
     checklist.items.forEach((item: any) => {

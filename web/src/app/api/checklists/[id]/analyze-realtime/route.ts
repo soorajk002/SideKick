@@ -40,6 +40,13 @@ export async function POST(
     }
 
     // Get meeting
+    if (!checklist.meetingId) {
+      return NextResponse.json(
+        { success: false, error: 'Checklist has no associated meeting' },
+        { status: 400 }
+      )
+    }
+
     const [meeting] = await db
       .select()
       .from(meetings)
@@ -95,7 +102,7 @@ export async function POST(
       id: item.id,
       title: item.title,
       description: item.description || undefined,
-      required: item.required,
+      required: item.isRequired,
       aiKeywords: item.aiKeywords || [],
     }))
 
@@ -155,14 +162,14 @@ export async function POST(
 
     const completedCount = updatedItems.filter((item) => item.isCompleted).length
     const totalCount = updatedItems.length
-    const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+    const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
     // Update checklist
     await db
       .update(checklists)
       .set({
         completedItems: completedCount,
-        completionRate,
+        completionPercentage,
         updatedAt: new Date(),
       })
       .where(eq(checklists.id, checklistId))
@@ -174,14 +181,14 @@ export async function POST(
     emitAnalysisCompleted(meeting.id, {
       itemsChecked,
       totalItems: totalCount,
-      completionRate,
+      completionPercentage,
     })
 
     return NextResponse.json({
       success: true,
       analyzed: true,
       itemsChecked,
-      completionRate,
+      completionPercentage,
       results: results.map(r => ({
         itemId: r.itemId,
         confidence: r.confidence,

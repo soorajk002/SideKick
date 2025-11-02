@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         userId,
         totalItems: items.length,
         completedItems: 0,
-        completionRate: 0,
+        completionPercentage: 0,
       })
       .returning()
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         title: item.title,
         description: item.description,
         order: item.order,
-        required: item.required,
+        required: item.isRequired,
         isCompleted: false,
         aiKeywords: item.aiKeywords,
       }))

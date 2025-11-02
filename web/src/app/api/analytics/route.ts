@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         )
 
       // Average completion rate
-      const completionRates = await db
+      const completionPercentages = await db
         .select({
           avgCompletion: sql<number>`AVG(CAST(completion_percentage AS FLOAT))`,
         })
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
       const totalMeetings = totalMeetingsResult[0]?.count || 0
       const wonMeetings = wonMeetingsResult[0]?.count || 0
       const winRate = totalMeetings > 0 ? (wonMeetings / totalMeetings) * 100 : 0
-      const avgCompletionRate = completionRates[0]?.avgCompletion || 0
+      const avgCompletionRate = completionPercentages[0]?.avgCompletion || 0
       const totalRevenue = revenueResult[0]?.totalRevenue || 0
 
       return NextResponse.json({

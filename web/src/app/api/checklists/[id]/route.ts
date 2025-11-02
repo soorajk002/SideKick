@@ -75,14 +75,14 @@ export async function PATCH(
 
     const completedItems = items.filter((item) => item.isCompleted).length
     const totalItems = items.length
-    const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+    const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
 
     // Update checklist
     const [updatedChecklist] = await db
       .update(checklists)
       .set({
         completedItems,
-        completionRate,
+        completionPercentage,
         aiAnalysis: body.aiAnalysis || existingChecklist.aiAnalysis,
         updatedAt: new Date(),
       })

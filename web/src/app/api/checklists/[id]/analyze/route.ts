@@ -62,7 +62,7 @@ export async function POST(
     // Check if organization has AI credits
     if (
       organization.aiCreditsLimit !== null &&
-      organization.aiCreditsUsed >= organization.aiCreditsLimit
+      (organization.aiCreditsUsed || 0) >= organization.aiCreditsLimit
     ) {
       return NextResponse.json(
         { success: false, error: 'AI credits limit reached. Please upgrade your plan.' },
@@ -78,7 +78,7 @@ export async function POST(
         .from(templates)
         .where(eq(templates.id, checklist.templateId))
 
-      templatePrompt = template?.aiPrompt || undefined
+      templatePrompt = template?.aiPrompts || undefined
     }
 
     // Get checklist items
@@ -93,7 +93,7 @@ export async function POST(
       id: item.id,
       title: item.title,
       description: item.description || undefined,
-      required: item.required,
+      required: item.isRequired,
       aiKeywords: item.aiKeywords || [],
     }))
 
@@ -127,14 +127,14 @@ export async function POST(
 
     const completedCount = updatedItems.filter((item) => item.isCompleted).length
     const totalCount = updatedItems.length
-    const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+    const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
     // Update checklist with AI analysis
     const [updatedChecklist] = await db
       .update(checklists)
       .set({
         completedItems: completedCount,
-        completionRate,
+        completionPercentage,
         aiAnalysis: {
           summary: analysis.summary,
           sentiment: analysis.sentiment,
@@ -163,7 +163,7 @@ export async function POST(
     await db
       .update(organizations)
       .set({
-        aiCreditsUsed: organization.aiCreditsUsed + 1,
+        aiCreditsUsed: (organization.aiCreditsUsed || 0) + 1,
       })
       .where(eq(organizations.id, organization.id))
 
@@ -174,7 +174,7 @@ export async function POST(
         analysis,
         creditsRemaining:
           organization.aiCreditsLimit !== null
-            ? organization.aiCreditsLimit - organization.aiCreditsUsed - 1
+            ? organization.aiCreditsLimit - (organization.aiCreditsUsed || 0) - 1
             : null,
       },
     })
