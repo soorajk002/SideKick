@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
 
     const dateConditions = []
     if (startDate) {
-      dateConditions.push(gte(meetings.startedAt, new Date(startDate)))
+      dateConditions.push(gte(meetings.startTime, new Date(startDate)))
     }
     if (endDate) {
-      dateConditions.push(gte(meetings.startedAt, new Date(endDate)))
+      dateConditions.push(gte(meetings.startTime, new Date(endDate)))
     }
 
     // Overview metrics
