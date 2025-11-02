@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       // Average completion rate
       const completionRates = await db
         .select({
-          avgCompletion: sql<number>`AVG(CAST(completion_rate AS FLOAT))`,
+          avgCompletion: sql<number>`AVG(CAST(completion_percentage AS FLOAT))`,
         })
         .from(checklists)
         .innerJoin(meetings, eq(meetings.id, checklists.meetingId))
@@ -106,15 +106,15 @@ export async function GET(request: NextRequest) {
     if (metric === 'templates') {
       const templatePerformance = await db
         .select({
-          templateId: meetings.templateId,
+          templateId: checklists.templateId,
           templateName: templates.name,
           meetingCount: count(),
-          avgCompletionRate: sql<number>`AVG(CAST(checklists.completion_rate AS FLOAT))`,
-          wonCount: sql<number>`SUM(CASE WHEN meetings.outcome = 'Closed Won' THEN 1 ELSE 0 END)`,
+          avgCompletionRate: sql<number>`AVG(CAST(${checklists.completionPercentage} AS FLOAT))`,
+          wonCount: sql<number>`SUM(CASE WHEN ${meetings.outcome} = 'Closed Won' THEN 1 ELSE 0 END)`,
         })
         .from(meetings)
-        .leftJoin(templates, eq(templates.id, meetings.templateId))
-        .leftJoin(checklists, eq(checklists.meetingId, meetings.id))
+        .innerJoin(checklists, eq(checklists.meetingId, meetings.id))
+        .leftJoin(templates, eq(templates.id, checklists.templateId))
         .where(
           and(
             eq(meetings.organizationId, organizationId),
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
             ...dateConditions
           )
         )
-        .groupBy(meetings.templateId, templates.name)
+        .groupBy(checklists.templateId, templates.name)
         .orderBy(desc(count()))
 
       return NextResponse.json({
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
         .select({
           userId: meetings.hostUserId,
           meetingCount: count(),
-          avgCompletionRate: sql<number>`AVG(CAST(checklists.completion_rate AS FLOAT))`,
+          avgCompletionRate: sql<number>`AVG(CAST(checklists.completion_percentage AS FLOAT))`,
           wonCount: sql<number>`SUM(CASE WHEN meetings.outcome = 'Closed Won' THEN 1 ELSE 0 END)`,
           totalRevenue: sql<number>`SUM(CAST(COALESCE(meetings.deal_value, 0) AS NUMERIC))`,
         })
@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
       const trends = await db
         .select({
           date: sql<string>`DATE(meetings.started_at)`,
-          avgCompletionRate: sql<number>`AVG(CAST(checklists.completion_rate AS FLOAT))`,
+          avgCompletionRate: sql<number>`AVG(CAST(checklists.completion_percentage AS FLOAT))`,
           meetingCount: count(),
         })
         .from(meetings)
