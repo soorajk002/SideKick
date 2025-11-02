@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         await db
           .update(meetings)
           .set({
-            endedAt: new Date(meetingData.end_time),
+            endTime: new Date(meetingData.end_time),
             duration: meetingData.duration,
             participants: meetingData.participant_count
               ? Array.from({ length: meetingData.participant_count }, (_, i) => ({
@@ -189,8 +189,6 @@ export async function POST(request: NextRequest) {
           .set({
             recordingUrl: recordingData.share_url || transcriptFile.download_url,
             transcriptUrl: transcriptFile.download_url,
-            hasRecording: true,
-            hasTranscript: true,
             updatedAt: new Date(),
           })
           .where(eq(meetings.id, meeting.id))
@@ -226,8 +224,7 @@ export async function POST(request: NextRequest) {
       await db
         .update(meetings)
         .set({
-          transcript: transcriptText,
-          hasTranscript: true,
+          transcriptText: transcriptText,
           updatedAt: new Date(),
         })
         .where(eq(meetings.id, meeting.id))

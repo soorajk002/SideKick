@@ -74,16 +74,32 @@ export async function POST(request: NextRequest) {
       .where(eq(templateItems.templateId, templateId))
       .orderBy(templateItems.order)
 
+    // Get meeting to get organizationId
+    const [meeting] = await db
+      .select()
+      .from(meetings)
+      .where(eq(meetings.id, meetingId))
+
+    if (!meeting) {
+      return NextResponse.json(
+        { success: false, error: 'Meeting not found' },
+        { status: 404 }
+      )
+    }
+
     // Create checklist
     const [checklist] = await db
       .insert(checklists)
       .values({
+        name: template.name,
+        items: template.items,
         meetingId,
         templateId,
         userId,
+        organizationId: meeting.organizationId,
         totalItems: items.length,
         completedItems: 0,
-        completionPercentage: 0,
+        completionPercentage: "0",
       })
       .returning()
 
@@ -95,9 +111,7 @@ export async function POST(request: NextRequest) {
         title: item.title,
         description: item.description,
         order: item.order,
-        required: item.isRequired,
         isCompleted: false,
-        aiKeywords: item.aiKeywords,
       }))
 
       await db.insert(checklistItems).values(checklistItemsToCreate)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, checklists, checklistItems, meetings, templates } from '@/lib/db'
+import { db, checklists, checklistItems, meetings, templates, templateItems } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { analyzeTranscriptRealtime, ChecklistItem } from '@/lib/ai/openai'
 import transcriptService from '@/lib/services/transcript-service'
@@ -90,10 +90,27 @@ export async function POST(
       )
     }
 
-    // Get checklist items
+    // Get checklist items with template info (for isRequired field)
     const items = await db
-      .select()
+      .select({
+        id: checklistItems.id,
+        checklistId: checklistItems.checklistId,
+        templateItemId: checklistItems.templateItemId,
+        title: checklistItems.title,
+        description: checklistItems.description,
+        order: checklistItems.order,
+        isCompleted: checklistItems.isCompleted,
+        completedAt: checklistItems.completedAt,
+        completedBy: checklistItems.completedBy,
+        aiChecked: checklistItems.aiChecked,
+        aiConfidence: checklistItems.aiConfidence,
+        aiReasoning: checklistItems.aiReasoning,
+        aiEvidence: checklistItems.aiEvidence,
+        isRequired: templateItems.isRequired,
+        aiKeywords: templateItems.aiKeywords,
+      })
       .from(checklistItems)
+      .leftJoin(templateItems, eq(checklistItems.templateItemId, templateItems.id))
       .where(eq(checklistItems.checklistId, checklistId))
       .orderBy(checklistItems.order)
 
@@ -102,7 +119,7 @@ export async function POST(
       id: item.id,
       title: item.title,
       description: item.description || undefined,
-      required: item.isRequired,
+      required: item.isRequired ?? false,
       aiKeywords: item.aiKeywords || [],
     }))
 
@@ -129,10 +146,10 @@ export async function POST(
           .set({
             isCompleted: true,
             completedAt: new Date(),
-            completedBy: 'AI',
+            completedBy: null,
             aiChecked: true,
-            aiConfidence: result.confidence,
-            notes: `AI (realtime): ${result.reasoning}\n\nEvidence: ${result.evidenceSnippets.join('; ')}`,
+            aiConfidence: result.confidence.toString(),
+            aiReasoning: `AI (realtime): ${result.reasoning}\n\nEvidence: ${result.evidenceSnippets.join('; ')}`,
             updatedAt: new Date(),
           })
           .where(eq(checklistItems.id, result.itemId))
@@ -169,7 +186,7 @@ export async function POST(
       .update(checklists)
       .set({
         completedItems: completedCount,
-        completionPercentage,
+        completionPercentage: completionPercentage.toString(),
         updatedAt: new Date(),
       })
       .where(eq(checklists.id, checklistId))
@@ -181,7 +198,7 @@ export async function POST(
     emitAnalysisCompleted(meeting.id, {
       itemsChecked,
       totalItems: totalCount,
-      completionPercentage,
+      completionRate: completionPercentage,
     })
 
     return NextResponse.json({

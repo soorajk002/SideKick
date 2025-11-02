@@ -176,7 +176,7 @@ function generateMarkdown(
         positive: '😊',
         neutral: '😐',
         negative: '😟',
-      }[meeting.aiSentiment] || '😐'
+      }[meeting.aiSentiment as 'positive' | 'neutral' | 'negative'] || '😐'
 
       md += `**Sentiment:** ${sentimentEmoji} ${meeting.aiSentiment}\n\n`
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, checklists, checklistItems, meetings, templates, organizations } from '@/lib/db'
+import { db, checklists, checklistItems, meetings, templates, organizations, templateItems } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { analyzeTranscriptWithAI, ChecklistItem } from '@/lib/ai/openai'
 
@@ -34,6 +34,13 @@ export async function POST(
     }
 
     // Get meeting details
+    if (!checklist.meetingId) {
+      return NextResponse.json(
+        { success: false, error: 'Checklist has no associated meeting' },
+        { status: 400 }
+      )
+    }
+
     const [meeting] = await db
       .select()
       .from(meetings)
@@ -47,6 +54,13 @@ export async function POST(
     }
 
     // Check AI credits
+    if (!meeting.organizationId) {
+      return NextResponse.json(
+        { success: false, error: 'Meeting has no organization' },
+        { status: 400 }
+      )
+    }
+
     const [organization] = await db
       .select()
       .from(organizations)
@@ -78,13 +92,30 @@ export async function POST(
         .from(templates)
         .where(eq(templates.id, checklist.templateId))
 
-      templatePrompt = template?.aiPrompts || undefined
+      templatePrompt = (template?.aiPrompts as string | undefined) || undefined
     }
 
-    // Get checklist items
+    // Get checklist items with template info (for isRequired field)
     const items = await db
-      .select()
+      .select({
+        id: checklistItems.id,
+        checklistId: checklistItems.checklistId,
+        templateItemId: checklistItems.templateItemId,
+        title: checklistItems.title,
+        description: checklistItems.description,
+        order: checklistItems.order,
+        isCompleted: checklistItems.isCompleted,
+        completedAt: checklistItems.completedAt,
+        completedBy: checklistItems.completedBy,
+        aiChecked: checklistItems.aiChecked,
+        aiConfidence: checklistItems.aiConfidence,
+        aiReasoning: checklistItems.aiReasoning,
+        aiEvidence: checklistItems.aiEvidence,
+        isRequired: templateItems.isRequired,
+        aiKeywords: templateItems.aiKeywords,
+      })
       .from(checklistItems)
+      .leftJoin(templateItems, eq(checklistItems.templateItemId, templateItems.id))
       .where(eq(checklistItems.checklistId, checklistId))
       .orderBy(checklistItems.order)
 
@@ -93,7 +124,7 @@ export async function POST(
       id: item.id,
       title: item.title,
       description: item.description || undefined,
-      required: item.isRequired,
+      required: item.isRequired ?? false,
       aiKeywords: item.aiKeywords || [],
     }))
 
@@ -109,10 +140,10 @@ export async function POST(
           .set({
             isCompleted: true,
             completedAt: new Date(),
-            completedBy: userId || 'AI',
+            completedBy: userId || null,
             aiChecked: true,
-            aiConfidence: result.confidence,
-            notes: `AI: ${result.reasoning}\n\nEvidence: ${result.evidenceSnippets.join('; ')}`,
+            aiConfidence: result.confidence.toString(),
+            aiReasoning: `AI: ${result.reasoning}\n\nEvidence: ${result.evidenceSnippets.join('; ')}`,
             updatedAt: new Date(),
           })
           .where(eq(checklistItems.id, result.itemId))
@@ -134,7 +165,7 @@ export async function POST(
       .update(checklists)
       .set({
         completedItems: completedCount,
-        completionPercentage,
+        completionPercentage: completionPercentage.toString(),
         aiAnalysis: {
           summary: analysis.summary,
           sentiment: analysis.sentiment,
@@ -151,7 +182,7 @@ export async function POST(
     await db
       .update(meetings)
       .set({
-        transcript,
+        transcriptText: transcript,
         aiSummary: analysis.summary,
         aiSentiment: analysis.sentiment,
         aiAnalyzedAt: new Date(),

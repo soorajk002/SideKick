@@ -85,7 +85,7 @@ export async function PUT(
         description,
         category,
         aiEnabled,
-        aiPrompt,
+        aiPrompts: aiPrompt,
         isPublic,
         tags,
         updatedAt: new Date(),
@@ -105,7 +105,7 @@ export async function PUT(
           title: item.title,
           description: item.description,
           order: index,
-          required: item.isRequired || false,
+          isRequired: item.isRequired || false,
           aiKeywords: item.aiKeywords || [],
         }))
 

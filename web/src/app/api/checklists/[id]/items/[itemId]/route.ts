@@ -44,7 +44,7 @@ export async function PATCH(
     }
 
     if (notes !== undefined) {
-      updateData.notes = notes
+      updateData.aiReasoning = notes
     }
 
     if (typeof aiChecked === 'boolean') {
@@ -52,7 +52,7 @@ export async function PATCH(
     }
 
     if (typeof aiConfidence === 'number') {
-      updateData.aiConfidence = aiConfidence
+      updateData.aiConfidence = aiConfidence.toString()
     }
 
     const [updatedItem] = await db
@@ -75,7 +75,7 @@ export async function PATCH(
       .update(checklists)
       .set({
         completedItems: completedCount,
-        completionPercentage,
+        completionPercentage: completionPercentage.toString(),
         updatedAt: new Date(),
       })
       .where(eq(checklists.id, checklistId))

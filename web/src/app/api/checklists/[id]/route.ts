@@ -82,7 +82,7 @@ export async function PATCH(
       .update(checklists)
       .set({
         completedItems,
-        completionPercentage,
+        completionPercentage: completionPercentage.toString(),
         aiAnalysis: body.aiAnalysis || existingChecklist.aiAnalysis,
         updatedAt: new Date(),
       })

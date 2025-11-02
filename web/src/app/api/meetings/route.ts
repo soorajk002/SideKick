@@ -103,10 +103,9 @@ export async function POST(request: NextRequest) {
     const [meeting] = await db.insert(meetings).values({
       title: title || `Meeting ${zoomMeetingId}`,
       zoomMeetingId,
-      templateId,
       hostUserId,
       organizationId,
-      startedAt: startedAt ? new Date(startedAt) : new Date(),
+      startTime: startedAt ? new Date(startedAt) : new Date(),
       participants: participants || [],
       dealStage,
       dealValue,

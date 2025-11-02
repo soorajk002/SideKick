@@ -90,8 +90,9 @@ export async function POST(request: NextRequest) {
       name,
       description,
       category,
+      items: items || [],
       aiEnabled: aiEnabled || false,
-      aiPrompt,
+      aiPrompts: aiPrompt,
       isPublic: isPublic || false,
       organizationId,
       createdBy,
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
         title: item.title,
         description: item.description,
         order: index,
-        required: item.isRequired || false,
+        isRequired: item.isRequired || false,
         aiKeywords: item.aiKeywords || [],
       }))
 
