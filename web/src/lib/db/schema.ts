@@ -228,6 +228,99 @@ export const checklists = pgTable('checklists', {
   userIdx: index('idx_checklists_user_id').on(table.userId),
 }))
 
+// =====================================================
+// TEMPLATE ITEMS
+// =====================================================
+
+export const templateItems = pgTable('template_items', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  templateId: uuid('template_id').references(() => templates.id, { onDelete: 'cascade' }).notNull(),
+
+  title: varchar('title', { length: 500 }).notNull(),
+  description: text('description'),
+  order: integer('order').notNull(),
+
+  category: varchar('category', { length: 100 }),
+  isRequired: boolean('is_required').default(false),
+  aiKeywords: text('ai_keywords').array(),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  templateIdx: index('idx_template_items_template_id').on(table.templateId),
+}))
+
+// =====================================================
+// CHECKLIST ITEMS
+// =====================================================
+
+export const checklistItems = pgTable('checklist_items', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  checklistId: uuid('checklist_id').references(() => checklists.id, { onDelete: 'cascade' }).notNull(),
+  templateItemId: uuid('template_item_id').references(() => templateItems.id),
+
+  title: varchar('title', { length: 500 }).notNull(),
+  description: text('description'),
+  order: integer('order').notNull(),
+
+  isCompleted: boolean('is_completed').default(false),
+  completedAt: timestamp('completed_at'),
+  completedBy: uuid('completed_by').references(() => users.id),
+
+  // AI
+  aiChecked: boolean('ai_checked').default(false),
+  aiConfidence: decimal('ai_confidence', { precision: 5, scale: 2 }),
+  aiReasoning: text('ai_reasoning'),
+  aiEvidence: jsonb('ai_evidence'),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  checklistIdx: index('idx_checklist_items_checklist_id').on(table.checklistId),
+}))
+
+// =====================================================
+// MEETING NOTES
+// =====================================================
+
+export const meetingNotes = pgTable('meeting_notes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  meetingId: uuid('meeting_id').references(() => meetings.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id).notNull(),
+
+  content: text('content').notNull(),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  meetingIdx: index('idx_meeting_notes_meeting_id').on(table.meetingId),
+}))
+
+// =====================================================
+// ACTION ITEMS
+// =====================================================
+
+export const actionItems = pgTable('action_items', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  meetingId: uuid('meeting_id').references(() => meetings.id, { onDelete: 'cascade' }).notNull(),
+
+  title: varchar('title', { length: 500 }).notNull(),
+  description: text('description'),
+
+  assigneeId: uuid('assignee_id').references(() => users.id),
+  dueDate: timestamp('due_date'),
+  priority: varchar('priority', { length: 20 }).default('medium'),
+
+  isCompleted: boolean('is_completed').default(false),
+  completedAt: timestamp('completed_at'),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  meetingIdx: index('idx_action_items_meeting_id').on(table.meetingId),
+  assigneeIdx: index('idx_action_items_assignee_id').on(table.assigneeId),
+}))
+
 // Export types
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -238,8 +331,20 @@ export type NewOrganization = typeof organizations.$inferInsert
 export type Template = typeof templates.$inferSelect
 export type NewTemplate = typeof templates.$inferInsert
 
+export type TemplateItem = typeof templateItems.$inferSelect
+export type NewTemplateItem = typeof templateItems.$inferInsert
+
 export type Meeting = typeof meetings.$inferSelect
 export type NewMeeting = typeof meetings.$inferInsert
 
 export type Checklist = typeof checklists.$inferSelect
 export type NewChecklist = typeof checklists.$inferInsert
+
+export type ChecklistItem = typeof checklistItems.$inferSelect
+export type NewChecklistItem = typeof checklistItems.$inferInsert
+
+export type MeetingNote = typeof meetingNotes.$inferSelect
+export type NewMeetingNote = typeof meetingNotes.$inferInsert
+
+export type ActionItem = typeof actionItems.$inferSelect
+export type NewActionItem = typeof actionItems.$inferInsert
