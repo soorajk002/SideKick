@@ -12,6 +12,22 @@ export default function ChecklistItem({ item }: ChecklistItemProps) {
   // TODO: Get actual userId from auth/session
   const userId = 'current-user';
 
+  const handleToggle = async () => {
+    console.log('=== ITEM TOGGLE DEBUG ===');
+    console.log('Item:', item.content);
+    console.log('Item ID:', item.id);
+    console.log('User ID:', userId);
+    console.log('API URL:', import.meta.env.VITE_API_URL);
+
+    try {
+      await toggleItem(item.id, userId);
+      console.log('✅ Item toggled successfully!');
+    } catch (error) {
+      console.error('❌ Failed to toggle item:', error);
+      alert(`Failed to toggle item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   return (
     <div
       className={clsx(
@@ -23,7 +39,7 @@ export default function ChecklistItem({ item }: ChecklistItemProps) {
     >
       {/* Checkbox */}
       <button
-        onClick={() => toggleItem(item.id, userId)}
+        onClick={handleToggle}
         className="flex-shrink-0 mt-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500/30 rounded-full transition-all"
       >
         {item.completed ? (

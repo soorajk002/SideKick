@@ -12,22 +12,39 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
     useChecklistStore();
   const { meetingId, currentUser } = useZoomStore();
   const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadTemplates();
   }, [loadTemplates]);
 
   const handleSelectTemplate = async (template: Template) => {
-    if (!meetingId || !currentUser) return;
+    console.log('=== TEMPLATE CLICK DEBUG ===');
+    console.log('Template:', template.name);
+    console.log('Meeting ID:', meetingId);
+    console.log('Current User:', currentUser);
+    console.log('API URL:', import.meta.env.VITE_API_URL);
+
+    if (!meetingId || !currentUser) {
+      const msg = `Missing data - Meeting: ${meetingId}, User: ${currentUser?.userName}`;
+      console.error(msg);
+      setError(msg);
+      return;
+    }
 
     setIsCreating(true);
+    setError(null);
     try {
       // TODO: Get actual organizationId from user session
       const organizationId = 'default-org';
+      console.log('Creating checklist...');
       await createChecklistFromTemplate(template.id, meetingId, currentUser.userId, organizationId);
+      console.log('✅ Checklist created successfully!');
       onClose();
     } catch (error) {
-      console.error('Failed to create checklist:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Failed to create checklist:', errorMsg, error);
+      setError(`Failed to create checklist: ${errorMsg}`);
     } finally {
       setIsCreating(false);
     }
@@ -72,6 +89,19 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-800">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="text-xs text-red-600 hover:text-red-700 mt-1"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Templates Grid */}
