@@ -12,3 +12,6 @@ export const db = drizzle(queryClient, { schema })
 
 // For migrations
 export const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 })
+
+// Re-export all schema tables
+export * from './schema'
