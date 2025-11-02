@@ -1,0 +1,32 @@
+===========================================
+VERCEL ENVIRONMENT VARIABLES
+Copy and paste these into Vercel dashboard
+===========================================
+
+1. DATABASE_URL
+postgresql://postgres:soorajk1234567892@db.uphayungnrbpgxpqjuyl.supabase.co:5432/postgres
+
+2. NEXTAUTH_SECRET
+OeVapwm5Iyg58Ch7Cr4hdh7vOfgO0+Wa09R7GByrkz4=
+
+3. NEXTAUTH_URL
+https://YOUR-PROJECT-NAME.vercel.app
+⚠️ IMPORTANT: Replace YOUR-PROJECT-NAME with your actual Vercel project URL
+
+4. OPENAI_API_KEY
+[Use the OpenAI key you already provided - starts with sk-proj-]
+
+5. NEXT_PUBLIC_APP_URL
+https://YOUR-PROJECT-NAME.vercel.app
+⚠️ IMPORTANT: Same as NEXTAUTH_URL
+
+6. NEXT_PUBLIC_API_URL
+http://localhost:8080
+
+===========================================
+REMEMBER TO:
+===========================================
+✅ Set Root Directory to: web
+✅ Update NEXTAUTH_URL after first deployment with real URL
+✅ Run database migrations after deployment:
+   cd web && npm run db:push
