@@ -78,10 +78,10 @@ export async function POST(request: NextRequest) {
     const [newUser] = await db
       .insert(users)
       .values({
-        name,
+        fullName: name,
         email,
         passwordHash,
-        emailVerified: null, // Will be verified via email
+        isEmailVerified: false,
       })
       .returning()
 
