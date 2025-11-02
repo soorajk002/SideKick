@@ -1,9 +1,8 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
-import * as dotenv from 'dotenv'
 
-dotenv.config()
+// Next.js and tsx automatically load .env files, no need for dotenv
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set')
