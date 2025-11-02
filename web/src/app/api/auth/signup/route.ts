@@ -50,7 +50,18 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // Create organization if name provided
+    // Create user first
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        fullName: name,
+        email,
+        passwordHash,
+        isEmailVerified: false,
+      })
+      .returning()
+
+    // Create organization if name provided (after user so we can set ownerId)
     let organizationId: string | null = null
     if (organizationName) {
       // Generate slug from organization name
@@ -65,6 +76,7 @@ export async function POST(request: NextRequest) {
         .values({
           name: organizationName,
           slug,
+          ownerId: newUser.id,
           subscriptionStatus: 'trialing',
           aiCreditsLimit: 5, // Free trial: 5 meetings
           aiCreditsUsed: 0,
@@ -72,21 +84,8 @@ export async function POST(request: NextRequest) {
         .returning()
 
       organizationId = organization.id
-    }
 
-    // Create user
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        fullName: name,
-        email,
-        passwordHash,
-        isEmailVerified: false,
-      })
-      .returning()
-
-    // Add user to organization as owner if organization was created
-    if (organizationId) {
+      // Add user to organization as owner
       await db
         .insert(organizationMembers)
         .values({
