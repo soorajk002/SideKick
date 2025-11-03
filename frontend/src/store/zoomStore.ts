@@ -76,7 +76,7 @@ export const useZoomStore = create<ZoomState>((set) => ({
         isInMeeting: true,
         meetingId: (contextData as any)?.meetingID || 'meeting-' + Date.now(),
         currentUser: {
-          userId: userInfo?.id || 'user-' + Date.now(),
+          userId: userInfo?.id || '00000000-0000-0000-0000-000000000003', // Default Zoom Guest UUID
           participantId: (contextData as any)?.participantId || '',
           userName: userInfo?.name || 'Guest',
           role: (contextData as any)?.role || 'attendee',

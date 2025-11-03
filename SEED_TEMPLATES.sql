@@ -3,6 +3,24 @@
 -- =====================================================
 -- Run this in your Supabase SQL Editor to add default templates
 
+-- Create default "Zoom Guest" user for the Zoom app
+-- The Zoom app uses this UUID when actual user info is not available
+INSERT INTO users (
+  id,
+  email,
+  full_name,
+  is_active,
+  is_email_verified
+)
+VALUES (
+  '00000000-0000-0000-0000-000000000003',
+  'zoom-guest@joinsidekick.ai',
+  'Zoom Guest User',
+  true,
+  false
+)
+ON CONFLICT (id) DO NOTHING;
+
 -- First, create a system organization for templates
 -- We'll use a fixed UUID so we can reference it
 INSERT INTO organizations (id, name, slug, owner_id, subscription_status, subscription_plan, ai_credits_limit)
