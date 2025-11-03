@@ -19,32 +19,45 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
   }, [loadTemplates]);
 
   const handleSelectTemplate = async (template: Template) => {
+    // IMMEDIATE VISUAL FEEDBACK
+    alert('CLICKED: ' + template.name);
+
     console.log('=== TEMPLATE CLICK DEBUG ===');
     console.log('Template:', template.name);
     console.log('Meeting ID:', meetingId);
     console.log('Current User:', currentUser);
     console.log('API URL:', import.meta.env.VITE_API_URL);
 
-    if (!meetingId || !currentUser) {
-      const msg = `Missing data - Meeting: ${meetingId}, User: ${currentUser?.userName}`;
-      console.error(msg);
-      setError(msg);
+    if (!meetingId) {
+      alert('ERROR: No meeting ID!');
+      setError('No meeting ID found');
+      return;
+    }
+
+    if (!currentUser) {
+      alert('ERROR: No user info!');
+      setError('No user information found');
       return;
     }
 
     setIsCreating(true);
     setError(null);
+
+    alert('Starting to create checklist...');
+
     try {
       // TODO: Get actual organizationId from user session
       const organizationId = 'default-org';
       console.log('Creating checklist...');
       await createChecklistFromTemplate(template.id, meetingId, currentUser.userId, organizationId);
       console.log('✅ Checklist created successfully!');
+      alert('SUCCESS! Checklist created!');
       onClose();
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errorMsg = error instanceof Error ? error.message : String(error);
       console.error('❌ Failed to create checklist:', errorMsg, error);
-      setError(`Failed to create checklist: ${errorMsg}`);
+      alert('FAILED: ' + errorMsg);
+      setError(`Failed: ${errorMsg}`);
     } finally {
       setIsCreating(false);
     }
