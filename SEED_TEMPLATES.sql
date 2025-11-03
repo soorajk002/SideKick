@@ -3,7 +3,7 @@
 -- =====================================================
 -- Run this in your Supabase SQL Editor to add default templates
 
--- First, create a system organization if it doesn't exist
+-- First, create a system organization for templates
 -- We'll use a fixed UUID so we can reference it
 INSERT INTO organizations (id, name, slug, owner_id, subscription_status, subscription_plan, ai_credits_limit)
 VALUES (
@@ -14,6 +14,21 @@ VALUES (
   'active',
   'free',
   0
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Create default organization for Zoom app meetings
+-- The Zoom app uses 'default-org' as organizationId when creating meetings
+INSERT INTO organizations (id, name, slug, owner_id, subscription_status, subscription_plan, ai_credits_limit, monthly_meeting_limit)
+VALUES (
+  'default-org',
+  'Zoom App Default',
+  'zoom-app-default',
+  NULL,
+  'active',
+  'free',
+  100,
+  1000
 )
 ON CONFLICT (id) DO NOTHING;
 
