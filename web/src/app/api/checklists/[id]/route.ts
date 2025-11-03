@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, checklists, checklistItems } from '@/lib/db'
 import { eq } from 'drizzle-orm'
+import { corsResponse, handleCorsOptions } from '@/lib/cors'
+
+// Handle CORS preflight
+export async function OPTIONS() {
+  return handleCorsOptions()
+}
 
 // GET /api/checklists/[id] - Get checklist with items
 export async function GET(
@@ -16,7 +22,7 @@ export async function GET(
       .where(eq(checklists.id, checklistId))
 
     if (!checklist) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: 'Checklist not found' },
         { status: 404 }
       )
@@ -29,7 +35,7 @@ export async function GET(
       .where(eq(checklistItems.checklistId, checklistId))
       .orderBy(checklistItems.order)
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: {
         ...checklist,
@@ -38,7 +44,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('Error fetching checklist:', error)
-    return NextResponse.json(
+    return corsResponse(
       { success: false, error: 'Failed to fetch checklist' },
       { status: 500 }
     )
@@ -61,7 +67,7 @@ export async function PATCH(
       .where(eq(checklists.id, checklistId))
 
     if (!existingChecklist) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: 'Checklist not found' },
         { status: 404 }
       )
@@ -89,13 +95,13 @@ export async function PATCH(
       .where(eq(checklists.id, checklistId))
       .returning()
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: updatedChecklist,
     })
   } catch (error) {
     console.error('Error updating checklist:', error)
-    return NextResponse.json(
+    return corsResponse(
       { success: false, error: 'Failed to update checklist' },
       { status: 500 }
     )

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, meetings, checklists, checklistItems } from '@/lib/db'
 import { eq, and, or, ilike, desc, gte, lte, isNull } from 'drizzle-orm'
+import { corsResponse, handleCorsOptions } from '@/lib/cors'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
+
+// Handle CORS preflight
+export async function OPTIONS() {
+  return handleCorsOptions()
+}
 
 // GET /api/meetings - List all meetings with optional filtering
 export async function GET(request: NextRequest) {
@@ -65,13 +71,13 @@ export async function GET(request: NextRequest) {
 
     const results = await query.orderBy(desc(meetings.startTime))
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: results,
     })
   } catch (error) {
     console.error('Error fetching meetings:', error)
-    return NextResponse.json(
+    return corsResponse(
       { success: false, error: 'Failed to fetch meetings' },
       { status: 500 }
     )
@@ -96,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!zoomMeetingId || !hostUserId || !organizationId) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
       )
@@ -114,13 +120,13 @@ export async function POST(request: NextRequest) {
       dealValue,
     }).returning()
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: meeting,
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating meeting:', error)
-    return NextResponse.json(
+    return corsResponse(
       { success: false, error: 'Failed to create meeting' },
       { status: 500 }
     )

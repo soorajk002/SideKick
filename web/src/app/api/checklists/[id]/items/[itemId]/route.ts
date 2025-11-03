@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, checklistItems, checklists } from '@/lib/db'
 import { eq, and } from 'drizzle-orm'
+import { corsResponse, handleCorsOptions } from '@/lib/cors'
+
+// Handle CORS preflight
+export async function OPTIONS() {
+  return handleCorsOptions()
+}
 
 // PATCH /api/checklists/[id]/items/[itemId] - Toggle or update item
 export async function PATCH(
@@ -24,7 +30,7 @@ export async function PATCH(
       )
 
     if (!existingItem) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: 'Checklist item not found' },
         { status: 404 }
       )
@@ -80,13 +86,13 @@ export async function PATCH(
       })
       .where(eq(checklists.id, checklistId))
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: updatedItem,
     })
   } catch (error) {
     console.error('Error updating checklist item:', error)
-    return NextResponse.json(
+    return corsResponse(
       { success: false, error: 'Failed to update checklist item' },
       { status: 500 }
     )

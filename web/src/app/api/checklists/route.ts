@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, checklists, checklistItems, meetings, templates, templateItems } from '@/lib/db'
 import { eq, and, desc } from 'drizzle-orm'
 import { analyzeTranscriptWithAI } from '@/lib/ai/openai'
+import { corsResponse, handleCorsOptions } from '@/lib/cors'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
+
+// Handle CORS preflight
+export async function OPTIONS() {
+  return handleCorsOptions()
+}
 
 // GET /api/checklists - List checklists
 export async function GET(request: NextRequest) {
@@ -31,13 +37,13 @@ export async function GET(request: NextRequest) {
 
     const results = await query.orderBy(desc(checklists.createdAt))
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: results,
     })
   } catch (error) {
     console.error('Error fetching checklists:', error)
-    return NextResponse.json(
+    return corsResponse(
       { success: false, error: 'Failed to fetch checklists' },
       { status: 500 }
     )
@@ -52,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!meetingId || !templateId || !userId) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
       )
@@ -65,7 +71,7 @@ export async function POST(request: NextRequest) {
       .where(eq(templates.id, templateId))
 
     if (!template) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: 'Template not found' },
         { status: 404 }
       )
@@ -84,7 +90,7 @@ export async function POST(request: NextRequest) {
       .where(eq(meetings.id, meetingId))
 
     if (!meeting) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: 'Meeting not found' },
         { status: 404 }
       )
@@ -120,7 +126,7 @@ export async function POST(request: NextRequest) {
       await db.insert(checklistItems).values(checklistItemsToCreate)
     }
 
-    return NextResponse.json(
+    return corsResponse(
       {
         success: true,
         data: {
@@ -132,7 +138,7 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Error creating checklist:', error)
-    return NextResponse.json(
+    return corsResponse(
       { success: false, error: 'Failed to create checklist' },
       { status: 500 }
     )
