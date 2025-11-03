@@ -5,7 +5,7 @@ import ChecklistItem from './ChecklistItem';
 import { Plus, ChevronDown } from 'lucide-react';
 
 export default function ChecklistView() {
-  const { activeChecklist, addItem, isConnected, templates, loadTemplates, createChecklistFromTemplate, createCustomChecklist } = useChecklistStore();
+  const { activeChecklist, addItem, templates, loadTemplates, createChecklistFromTemplate, createCustomChecklist } = useChecklistStore();
   const { meetingId, currentUser } = useZoomStore();
   const [newItemText, setNewItemText] = useState('');
   const [showAddItem, setShowAddItem] = useState(false);
