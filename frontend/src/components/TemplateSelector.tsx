@@ -54,8 +54,21 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
       alert('SUCCESS! Checklist created!');
       onClose();
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error('❌ Failed to create checklist:', errorMsg, error);
+      console.error('❌ Failed to create checklist:', error);
+
+      // Try to extract detailed error from axios error response
+      let errorMsg = 'Unknown error';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        console.error('Response data:', axiosError.response?.data);
+        console.error('Response status:', axiosError.response?.status);
+        errorMsg = axiosError.response?.data?.details || axiosError.response?.data?.error || axiosError.message || String(error);
+      } else if (error instanceof Error) {
+        errorMsg = error.message;
+      } else {
+        errorMsg = String(error);
+      }
+
       alert('FAILED: ' + errorMsg);
       setError(`Failed: ${errorMsg}`);
     } finally {
