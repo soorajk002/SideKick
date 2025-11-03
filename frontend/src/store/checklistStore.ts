@@ -62,13 +62,13 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
 
   createChecklistFromTemplate: async (templateId: string, meetingId: string, userId: string, organizationId: string) => {
     try {
-      // First, create or get the meeting
-      const zoomMeetingId = await (window as any).zoomSdk?.getMeetingContext?.()?.then((ctx: any) => ctx.meetingID);
-
-      if (zoomMeetingId) {
+      // Create or get the meeting using the meetingId that was passed in
+      // Note: We don't call zoomSdk.getMeetingContext() because it requires marketplace verification
+      // The meetingId is already the Zoom meeting ID from the context
+      if (meetingId) {
         await meetingsApi.create({
-          title: `Meeting ${zoomMeetingId}`,
-          zoomMeetingId: zoomMeetingId.toString(),
+          title: `Meeting ${meetingId}`,
+          zoomMeetingId: meetingId,
           templateId,
           hostUserId: userId,
           organizationId,
