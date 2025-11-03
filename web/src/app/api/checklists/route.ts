@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
       .returning()
 
     // Create checklist items from template
+    const createdItems = [];
     if (items.length > 0) {
       const checklistItemsToCreate = items.map((item) => ({
         checklistId: checklist.id,
@@ -123,7 +124,8 @@ export async function POST(request: NextRequest) {
         isCompleted: false,
       }))
 
-      await db.insert(checklistItems).values(checklistItemsToCreate)
+      const insertedItems = await db.insert(checklistItems).values(checklistItemsToCreate).returning()
+      createdItems.push(...insertedItems)
     }
 
     return corsResponse(
@@ -131,7 +133,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: {
           ...checklist,
-          items: items.length,
+          items: createdItems, // Return the actual items array, not just the count
         },
       },
       { status: 201 }
