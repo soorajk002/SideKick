@@ -83,11 +83,11 @@ export async function POST(request: NextRequest) {
       .where(eq(templateItems.templateId, templateId))
       .orderBy(templateItems.order)
 
-    // Get meeting to get organizationId
+    // Get meeting by Zoom meeting ID (meetingId is the Zoom meeting ID, not our DB UUID)
     const [meeting] = await db
       .select()
       .from(meetings)
-      .where(eq(meetings.id, meetingId))
+      .where(eq(meetings.zoomMeetingId, meetingId))
 
     if (!meeting) {
       return corsResponse(
@@ -96,13 +96,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create checklist
+    // Create checklist using the database meeting ID
     const [checklist] = await db
       .insert(checklists)
       .values({
         name: template.name,
         items: template.items,
-        meetingId,
+        meetingId: meeting.id, // Use the database meeting ID, not Zoom meeting ID
         templateId,
         userId,
         organizationId: meeting.organizationId,
