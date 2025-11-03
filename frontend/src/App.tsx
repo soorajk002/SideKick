@@ -1,15 +1,56 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useZoomStore } from './store/zoomStore';
+import { useChecklistStore } from './store/checklistStore';
 import ChecklistView from './components/ChecklistView';
 import Header from './components/Header';
 import LoadingScreen from './components/LoadingScreen';
 
 function App() {
-  const { initializeZoom, isConnected, isLoading, error } = useZoomStore();
+  const { initializeZoom, isConnected, isLoading, error, currentUser, meetingId } = useZoomStore();
+  const { templates, loadTemplates, createChecklistFromTemplate } = useChecklistStore();
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     initializeZoom();
   }, [initializeZoom]);
+
+  // Load templates when connected
+  useEffect(() => {
+    if (isConnected) {
+      loadTemplates();
+    }
+  }, [isConnected, loadTemplates]);
+
+  const handleTemplateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setSelectedTemplate(value);
+
+    if (!value || !currentUser || !meetingId) return;
+
+    setIsCreating(true);
+    try {
+      if (value === 'custom') {
+        // For now, just show an alert. You could open a modal for custom checklist creation
+        alert('Custom checklist creation coming soon!');
+        setSelectedTemplate('');
+      } else {
+        // Create checklist from template
+        await createChecklistFromTemplate(
+          value,
+          meetingId,
+          currentUser.userId,
+          'default-org' // You might want to get this from user settings
+        );
+      }
+    } catch (error) {
+      console.error('Failed to create checklist:', error);
+      alert('Failed to create checklist. Please try again.');
+      setSelectedTemplate('');
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -48,14 +89,14 @@ function App() {
     );
   }
 
-  // Dummy function for header - template selection is now in the dropdown
-  const handleNewChecklist = () => {
-    // Template selection is now handled via dropdown in ChecklistView
-  };
-
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      <Header onNewChecklist={handleNewChecklist} />
+      <Header
+        templates={templates}
+        selectedTemplate={selectedTemplate}
+        onTemplateChange={handleTemplateChange}
+        isCreating={isCreating}
+      />
 
       <div className="flex-1 overflow-hidden">
         <ChecklistView />
