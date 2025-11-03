@@ -4,13 +4,11 @@ import clsx from 'clsx';
 
 interface ChecklistItemProps {
   item: ChecklistItemType;
+  userId: string;
 }
 
-export default function ChecklistItem({ item }: ChecklistItemProps) {
+export default function ChecklistItem({ item, userId }: ChecklistItemProps) {
   const { toggleItem, removeItem } = useChecklistStore();
-
-  // TODO: Get actual userId from auth/session
-  const userId = 'current-user';
 
   const handleToggle = async () => {
     console.log('=== ITEM TOGGLE DEBUG ===');
