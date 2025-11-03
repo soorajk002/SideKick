@@ -11,16 +11,15 @@ export default function Header({ onNewChecklist }: HeaderProps) {
         <img
           src="/images/sidekick-logo.svg"
           alt="Sidekick"
-          className="h-8 w-auto"
+          className="h-6 w-auto"
         />
       </div>
 
       <button
         onClick={onNewChecklist}
-        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl text-sm font-medium hover:from-primary-700 hover:to-primary-800 transition-all duration-200 shadow-soft hover:shadow-soft-lg"
+        className="flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-all duration-200"
       >
         <Plus className="w-4 h-4" />
-        New
       </button>
     </header>
   );

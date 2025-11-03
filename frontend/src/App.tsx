@@ -1,15 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useZoomStore } from './store/zoomStore';
-import { useChecklistStore } from './store/checklistStore';
 import ChecklistView from './components/ChecklistView';
-import TemplateSelector from './components/TemplateSelector';
 import Header from './components/Header';
 import LoadingScreen from './components/LoadingScreen';
 
 function App() {
   const { initializeZoom, isConnected, isLoading, error } = useZoomStore();
-  const { activeChecklist } = useChecklistStore();
-  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     initializeZoom();
@@ -52,16 +48,17 @@ function App() {
     );
   }
 
+  // Dummy function for header - template selection is now in the dropdown
+  const handleNewChecklist = () => {
+    // Template selection is now handled via dropdown in ChecklistView
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      <Header onNewChecklist={() => setShowTemplates(true)} />
+      <Header onNewChecklist={handleNewChecklist} />
 
       <div className="flex-1 overflow-hidden">
-        {showTemplates || !activeChecklist ? (
-          <TemplateSelector onClose={() => setShowTemplates(false)} />
-        ) : (
-          <ChecklistView />
-        )}
+        <ChecklistView />
       </div>
     </div>
   );
