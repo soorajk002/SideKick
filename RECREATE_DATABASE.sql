@@ -190,6 +190,7 @@ CREATE TABLE meetings (
   -- Participants
   host_user_id UUID REFERENCES users(id),
   organization_id UUID REFERENCES organizations(id),
+  participant_count INTEGER DEFAULT 1,
   participants JSONB,
 
   -- Recording & Transcript
@@ -205,6 +206,8 @@ CREATE TABLE meetings (
   -- AI Analysis
   ai_summary TEXT,
   ai_sentiment VARCHAR(50),
+  ai_key_points JSONB,
+  ai_action_items JSONB,
   ai_analyzed_at TIMESTAMP,
 
   -- Notes
