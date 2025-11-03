@@ -46,8 +46,8 @@ export default function TemplateSelector({ onClose }: TemplateSelectorProps) {
     alert('Starting to create checklist...');
 
     try {
-      // TODO: Get actual organizationId from user session
-      const organizationId = 'default-org';
+      // Use the default Zoom app organization UUID
+      const organizationId = '00000000-0000-0000-0000-000000000002';
       console.log('Creating checklist...');
       await createChecklistFromTemplate(template.id, meetingId, currentUser.userId, organizationId);
       console.log('✅ Checklist created successfully!');

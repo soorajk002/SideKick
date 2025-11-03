@@ -18,10 +18,10 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Create default organization for Zoom app meetings
--- The Zoom app uses 'default-org' as organizationId when creating meetings
+-- The Zoom app uses this UUID as organizationId when creating meetings
 INSERT INTO organizations (id, name, slug, owner_id, subscription_status, subscription_plan, ai_credits_limit, monthly_meeting_limit)
 VALUES (
-  'default-org',
+  '00000000-0000-0000-0000-000000000002',
   'Zoom App Default',
   'zoom-app-default',
   NULL,
